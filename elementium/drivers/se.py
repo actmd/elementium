@@ -441,7 +441,7 @@ class SeElements(Elements, Browser):
         :returns: A new SeElements object with the filter applied
         """
         def callback(elements):
-            return filter(fn, elements)
+            return map(lambda e: e.item, filter(fn, elements))
         return SeElements(self.browser, self, callback, self.config)
 
     def title(self, ttl=None):
