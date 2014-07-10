@@ -502,7 +502,7 @@ class Elements(collections.MutableSequence):
         for element in self:
             if ttl:
                 ttl = ttl - (time.time() - start_time)
-            retvals.append(self.with_update(fn, ttl=ttl))
+            retvals.append(element.with_update(fn, ttl=ttl))
             if pause:
                 time.sleep(pause)
         if return_results:

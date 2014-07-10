@@ -1,7 +1,7 @@
 elementium
 ==========
 
-Elementium: Browser testing made easy.
+Elementium: Browser testing done right.
 
 Homepage
 --------
