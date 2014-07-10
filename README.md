@@ -1,14 +1,49 @@
-elementium
+Elementium
 ==========
 
-Elementium: Browser testing done right.
+[http://github.com/actmd/elementium](http://github.com/actmd/elementium)
 
-Homepage
---------
+jQuery-style syntactic sugar for highly reliable automated browser testing in Python
 
-Visit the home of `elementium` on the web: [Elementium](http://github.com/actmd/elementium). 
+* Chainable methods with obvious names
+* Easy to read
+* Concise to write
+* Built-in fault tolerance
 
-For an intruction to why you'd want to use elementium, take a look at the following [post](http://prschmid.blogspot.com/2014/07/elementium-browser-testing-done-right.html).
+For an introduction to why you'd want to use Elementium, take a look at [the following post](http://prschmid.blogspot.com/2014/07/elementium-browser-testing-done-right.html).
+
+Before & After
+--------------
+
+### With only the [Selenium Python Bindings](http://selenium-python.readthedocs.org/en/latest/index.html)
+
+```python
+# From http://selenium-python.readthedocs.org/en/latest/getting-started.html
+
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+
+driver = webdriver.Firefox()
+driver.get("http://www.python.org")
+assert "Python" in driver.title
+elem = driver.find_element_by_name("q")
+elem.send_keys("selenium")
+elem.send_keys(Keys.RETURN)
+driver.close()
+```
+
+### With Elementium
+
+```python
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from elementium.drivers.se import SeElements
+
+se = SeElements(webdriver.Firefox())
+se.navigate("http://www.python.org").insist(lambda e: "Python" in e.title)
+se.find("q").write("selenium" + Keys.RETURN)
+
+```
 
 Installation
 ------------
@@ -27,129 +62,277 @@ cd elementium
 python setup.py install
 ```
 
-Contributing
-------------
-
-If you would like to contribute to this project, you will need to use [git flow](https://github.com/nvie/gitflow). This way, any and all changes happen on the development branch and not on the master branch. As such, after you have git-flow-ified your elementium git repo, create a pull request for your branch, and we'll take it from there.
 
 Usage
 -----
 
-Currently, the only driver that is implemented makes use of the python [Selenium bindings](http://selenium-python.readthedocs.org/en/latest/api.html). As such, all of the usage examples make use of the Selenium driver.
+Elementium includes by default a wrapper for the [Selenium Python Bindings](http://selenium-python.readthedocs.org/en/latest/api.html). As such, all of the usage examples make use of the Selenium driver.
 
-Let's get started by wrapping our Selenium browser object with a SeElements (Selenium Elements) object.
+### Wrap the browser with an Elementium object
 
 ```python
 from selenium import webdriver
 from elementium.drivers.se import SeElements
 
-# Initialize the elements wrapper.
-# That's all you have to do to get the benefits of Elementium!
-elements = SeElements(webdriver.Firefox())
+se = SeElements(webdriver.Firefox())
 ```
 
-Ok, now that you know how to do that, let's find all elements on the page that have the CSS class `ctr-p` on the Google search page.
+### Navigating to a web page
 
 ```python
-# Go to the Google search page
-elements.navigate('http://www.google.com')
+se.navigate("http://www.google.com")
+```
 
+### Finding DOM elements
+
+Elementium simplifies most of Selenium's many `find` methods...
+
+* `find_element_by_id`
+* `find_element_by_name`
+* `find_element_by_tag_name`
+* `find_element_by_class_name`
+* `find_element_by_css_selector`
+* `find_element_by_link_text`
+* `find_element_by_partial_link_text`
+
+...into two `find()` and `find_link()` methods:
+
+```python
+# Find by ID
+se.find("#foo")
+
+# Find by name
+se.find("[name='foo']")
+
+# Find by tag name
+se.find("input")
+
+# Find by class name
+se.find(".cssClass")
+
+# Find by link text
+se.find_link("Click me")
+
+# Find by partial link text
+se.find_link("Click", exact=False)
+```
+
+`find()` and `find_link()` will also return multiple elements, if present, so you can forget about all the additional `find_elements_...` methods, too:
+
+```html
+<div>...</div> <div>...</div> <div>...</div>
+```
+
+```python
+len(se.find("div")) # == 3
+```
+
+Under the hood, `find()` returns a new `SeElements` object containing a list of all of the items that matched. (These individual items are also of type `SeElements`.)
+
+### Getting specific items
+
+The `get` method lets you pull out a specific item in a chainable manner.
+
+```html
+<button>Foo</button> <button>Bar</button> <button>Baz</button>
+```
+
+```python
+# Get the second button
+se.find("button").get(1)
+```
+
+#### Accessing the raw object
+
+If you would rather get the raw object (e.g. `SeleniumWebElement`) that is returned by the underlying driver, use `items`:
+
+```python
 # Find elements on a page for a given class
-els = elements.find('.ctr-p')
-for el in els:
-    print el.value()
+buttons = se.find("button")
+for button in buttons.items:
+    print type(button)
 ```
 
-Under the hood, `find()` will return a new `SeElements` object containing a list of all of the items that matched. All items that are returned by getting the individual elements in the container will by of type `SeElements`. E.g.
+The `item` alias will return the *first* raw item:
 
 ```python
-# Find elements on a page for a given class
-els = elements.find('.ctr-p')
-for el in els:
-    print type(el)
+se.find("button").item
 ```
 
-If you would rather get the raw object that is returned by the underlying driver (in this case Selenium), just get the items as follows:
+### Getting values
+
+```html
+<input value="blerg" />
+```
 
 ```python
-# Find elements on a page for a given class
-els = elements.find('.ctr-p')
-for item in els.items:
-    print type(el)
+se.find("input").value() # returns 'blerg'
 ```
 
-Note: there happens to be a helper alias that will give you the first raw item via ``else.item``.
+### Clicking things
 
-So far, this has been nothing too special, but how about applying a function to each of those elements? For example, let's say we want to click each one.
+```html
+<button>Click me</button>
+```
 
 ```python
-# Find all "Search" buttons on the page and click each one
-# Don't blame me for that ID... that's what is used by the folks at Google...
-elements.find('#gbqfba').foreach(lambda e: e.click())
+se.find("button").click()
 ```
 
-Ok, that seems like an annoying thing to have to write that `foreach` each time you want to click many buttons at once (note, when I say "at once" I mean that they will be clicked sequentially, but with one function call).
+```html
+<input type="checkbox" value="check1">
+<input type="checkbox" value="check2">
+<input type="checkbox" value="check3">
+```
 
 ```python
-# Find all "Search" buttons on the page and click each one
-# (there happens to be only one...)
-elements.find('#gbqfba').click()
+# Click all three checkboxes
+se.find("input[type='checkbox']").click()
 ```
 
-Of course, just clicking on the "Search" button with nothing to search for is meaningless. Let's first add some thing to search for in the search box.
+### Typing
+
+```html
+<input type="text" />
+```
 
 ```python
-# Go to the Google search page
-elements.navigate('http://www.google.com')
-
-# Write something in the search box
-elements.find('#gbqfq').write('elementium')
-
-# Click the search button
-elements.find('#gbqfba').click()
+se.find("input").write("If not now, when?")
 ```
 
-Ok, that's all well and great, but how is that different from just using Selenium? Fair question. Let's step it up a bit. One of the big issues with Selenium is waiting for pages to load completely and all of the retry logic that may have to be used to have tests that work well. The common solution is to wrap all of your code with something like `with_retry()` functions. For example, a naive, old way of doing something might have been somthing like:
+### Selecting
+
+```html
+<select>
+    <option value="cb">Corned Beef</option>
+    <option value="ps">Pastrami</option>
+</select>
+```
+
+```python
+# Select by visible text
+se.find("select").select(text="Corned Beef")
+
+# Select by value
+se.find("select").select(value="cb")
+
+# Select by index
+se.find("select").select(i=0)
+```
+
+If manipulating a multiple select, you may use the `deselect()` method in a similar manner:
+
+```html
+<select multiple>
+    <option value="h">Hummus</option>
+    <option value="t">Tahina</option>
+    <option value="c">Chips</option>
+    <option value="a">Amba</option>
+</select>
+```
+
+```python
+# Deselect by visible text
+se.find("select").deselect(text="Chips")
+
+# Deelect by value
+se.find("select").deselect(value="c")
+
+# Deselect by index
+se.find("select").deselect(i=2)
+
+# Deselect all
+se.find("select").deselect()
+```
+
+
+### Waiting
+
+So far, we haven't taken any huge leaps from off-the-shelf Selenium, though we're certainly typing less!
+
+One of the big issues with Selenium is waiting for pages to load completely and all of the retry logic that may have to be used to have tests that work well. A common solution is to [wrap your code with "retry" functions](https://saucelabs.com/resources/selenium/lose-races-and-win-at-selenium).
+
+For example, a naive way of retrying might have been:
 
 ```python
 browser = webdriver.Firefox()
 els = None
 while not els:
-    els = browser.find_element_by_id('#gbqfba')
+    els = browser.find_element_by_tag_name('button')
     time.sleep(0.5)
 ```
 
-Not only is that ugly, but it's a pain to write that each time. Elementium takes care of all of this for you. For example, we can do something like
+With Elementium, just tell `find()` to wait:
 
 ```python
-# Retry until the search button is on the page before continuing
-# This will retry for 20 seconds (by default)
-els = elements.find('#gbqfba').until(lambda e: len(e) > 0)
-
-# This will retry for 60 seconds
-els = elements.find('#gbqfba').until(lambda e: len(e) > 0, ttl=60)
+# Retry until we find a button on the page (up to 20 seconds by default)
+se.find('button', wait=True)
 ```
 
-Alternatively, if you know that you want this needs to be on the page before continuing, you can tell the `find()` method to wait.
+Have a more complex success condition? Use `until()`:
 
 ```python
-# Retry until the search button is on the page before continuing
-# This will retry for 20 seconds (by default)
-els = elements.find('#gbqfba', wait=True)
+# Retry until we find 3 buttons on the page (up to 20 seconds by default)
+se.find('button').until(lambda e: len(e) == 3)
+
+# Retry for 60 seconds
+se.find('button').until(lambda e: len(e) == 3, ttl=60)
 ```
 
-Both of the above methods will raise a ``elementium.elements.TimeoutError`` if the element is not found in the specified period of time. How about if you are running this as part of a test and you want an ``AssertionError`` instead? Simple, just use the `insist()` method instead of the `until()` method. (I.e. `until()` and `insist()` behave the same way, the difference is only in the error they raise if the items are not found.)
+Both of the above methods will raise a ``elementium.elements.TimeoutError`` if the element is not found in the specified period of time.
+
+Basically all methods that are part of the `SeElements` object will be automatically retried for you. Under the hood, each selector (e.g. '.foo' or '#foo') is stored as a callback function (similar to something like ``lambda: selenium.find_element_by_id('foo')``). This way, when any of the calls to any of the methods of an element has an expected error (``StaleElementException``, etc.) it will recall this function. If you perform chaining, this will actually propagate that refresh (called ``update()``) up the entire chain to ensure that all parts of the call are valid. Cool!
+
+(Look at the code for more detail.)
+
+
+### Making assertions
 
 ```python
-# Retry until the search button is on the page before continuing
-# This will retry for 20 seconds (by default)
-els = elements.find('#gbqfba').insist(lambda e: len(e) > 0)
+se.find('input').insist(lambda e: e.value() == 'Pilkington')
 ```
 
-Basically all methods that are part of the `SeElements` object will automatically retried for you. "How does it do all this magic," you ask. I won't go into too much detail here (but feel free to take a look at the code), but under the hood, each selector (e.g. '.foo' or '#foo') is stored as a callback function (similar to something like ``lambda: selenium.find_element_by_id('foo')``). This way, when any of the calls to any of the methods of an element has an expected error (``StaleElementException``, etc.) it will recall this function. If you perform chaining, this will actually propagate that refresh (called ``update()``) up the entire chain to ensure that all parts of the call are valid. Cool!
+This works exactly like `until()` above, only it raises an ``AssertionError`` instead.
+
+### Other useful methods
+
+See the full Elementium documentation for more details on the following methods.
+
+* `filter()`
+* `scroll()`
+* `scroll_top()`
+* `scroll_bottom()`
+
+The following are simply more reliable versions of their Selenium counterparts. Some have been renamed for ease of use.
+
+* `is_displayed()`
+* `is_enabled()`
+* `is_selected()`
+* `text()`
+* `tag_name()`
+* `attribute()`
+* `clear()`
+* `parent()`
+* `xpath()`
+* `source()`
+* `refresh()`
+* `current_url()`
+* `execute_script()`
+* `get_window_size()`
+* `set_window_size()`
+* `switch_to_active_element()`
 
 The Future
 ----------
 
-There are several features planned for the future to improve Elementium and they will be rolled out as they pass through our internal scrutinty. If you have great ideas, you can be part of Elementium's future as well!
+There are several features planned for the future to improve Elementium and they will be rolled out as they pass through our internal scrutiny. If you have great ideas, you can be part of Elementium's future as well!
 
+Contributing
+------------
+
+If you would like to contribute to this project, you will need to use [git flow](https://github.com/nvie/gitflow). This way, any and all changes happen on the development branch and not on the master branch. As such, after you have git-flow-ified your elementium git repo, create a pull request for your branch, and we'll take it from there.
+
+Acknowledgements
+----------------
+
+Elementium has been a collaborative effort of [ACT.md](http://act.md).
