@@ -16,6 +16,8 @@ from elementium.elements import (
     with_retry,
     with_update
 )
+from elementium.util import ignored
+
 
 
 class SeElements(Elements, Browser):
@@ -519,11 +521,9 @@ class SeElements(Elements, Browser):
         :returns: A tuple of the form ``(width, height)`` where the units are
                   pixels
         """
-        try:
+        with ignored(Exception):
             dim = self.browser.get_window_size()
             return (dim['width'], dim['height'])
-        except:
-            pass
             
     def set_window_size(self, width, height, sleep=DEFAULT_SLEEP_TIME):
         """Set the size of the browser window
@@ -534,12 +534,10 @@ class SeElements(Elements, Browser):
                       sure the command has been run
         :returns: ``self``
         """
-        try:
+        with ignored(Exception):
             self.browser.set_window_size(width, height)
             if sleep:
                 time.sleep(sleep)
-        except:
-            pass
         return self
 
     def scroll(self, x=0, y=0, sleep=DEFAULT_SLEEP_TIME):

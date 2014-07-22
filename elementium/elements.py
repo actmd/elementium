@@ -8,6 +8,8 @@ import abc
 import collections
 import time
 
+from elementium.util import ignored
+
 
 DEFAULT_SLEEP_TIME = 0.25
 DEFAULT_TTL = 20
@@ -560,10 +562,8 @@ class Elements(collections.MutableSequence):
         """
         ttl = ttl if ttl else self.ttl
         retval = None
-        try:
+        with ignored(TimeOutError):
             retval = ConditionWaiter(self).until(fn, ttl=ttl)
-        except TimeOutError:
-            pass
         assert fn(retval)
         return self
 
