@@ -11,13 +11,42 @@ from selenium.webdriver.support.ui import Select
 
 from elementium.elements import (
     Browser,
-    DEFAULT_SLEEP_TIME,
-    Elements,
-    with_retry,
-    with_update
+    Elements
 )
-from elementium.util import ignored
+from elementium.util import (
+    DEFAULT_SLEEP_TIME,
+    DEFAULT_TTL,
+    ignored
+)
+from elementium.waiters import (
+    ExceptionRetryWaiter,
+    ExceptionRetryElementsWaiter
+)
 
+
+class WebDriverExceptionRetryWaiter(ExceptionRetryWaiter):
+
+    def __init__(self, n=0, ttl=DEFAULT_TTL):
+        """Create a new Waiter
+
+        :param n: The number of times to retry
+        :param ttl: The number of seconds to wait.
+        """
+        super(WebDriverExceptionRetryWaiter, self).__init__(
+            WebDriverException, n=n, ttl=ttl)
+
+
+class WebDriverExceptionRetryElementsWaiter(ExceptionRetryElementsWaiter):
+
+    def __init__(self, elements, n=0, ttl=DEFAULT_TTL):
+        """Create a new Waiter
+
+        :param elements: The :class:`Elements` we want to wait on.
+        :param n: The number of times to retry
+        :param ttl: The number of seconds to wait.
+        """
+        super(WebDriverExceptionRetryElementsWaiter, self).__init__(
+            elements, WebDriverException, n=n, ttl=ttl)
 
 
 class SeElements(Elements, Browser):
@@ -57,29 +86,30 @@ class SeElements(Elements, Browser):
         return SeElements(
             self.browser, self, lambda context: [context.items[i]], self.config)
 
-    def with_retry(self, fn, ttl=None):
+    def retried(self, fn, update=True, ttl=None):
         """Retry a function for :attr:`ttl` seconds
 
         :param fn: The function to call
-        :param ttl: The minimum number of seconds to keep retrying
+        :param update: Whether or not to call update() on self between each
+                       retry.
+        :param ttl: The number of seconds to retry.
         :returns: The result of running :attr:`fn`
         """
-        return with_retry(fn, WebDriverException, ttl=ttl if ttl else self.ttl)
-
-    def with_update(self, fn, ttl=None):
-        """Retry a function for :attr:`ttl` seconds
-
-        Unlike :func:`with_retry`, this will update() `self` on each
-        failure instead of just retrying.
-
-        :param fn: The function to call
-        :returns: The result of running :attr:`fn`
-        """
-        return with_update(
-            fn, self, WebDriverException, ttl=ttl if ttl else self.ttl)
+        ttl = ttl if ttl is not None else self.ttl
+        if ttl:
+            if update:
+                return WebDriverExceptionRetryElementsWaiter(self, ttl=ttl).\
+                    wait(fn)
+            else:
+                return WebDriverExceptionRetryWaiter(ttl=ttl).wait(fn)
+        else:
+            if update:
+                return fn(self)
+            else:
+                return fn()
 
     def is_displayed(self, ttl=None):
-        """Get whether or not the element is visibile
+        """Get whether or not the element is visible
 
         If there are multiple items in this object, the visibility of the first
         element will be returned.
@@ -89,7 +119,7 @@ class SeElements(Elements, Browser):
         """
         def callback(elements):
             return elements.item.is_displayed() if elements.items else False
-        return self.with_update(callback, ttl=ttl)
+        return self.retried(callback, update=True, ttl=ttl)
 
     def is_enabled(self, ttl=None):
         """Get whether or not the element is enabled
@@ -102,7 +132,7 @@ class SeElements(Elements, Browser):
         """
         def callback(elements):
             return elements.item.is_enabled() if elements.items else False
-        return self.with_update(callback, ttl=ttl)
+        return self.retried(callback, update=True, ttl=ttl)
 
     def is_selected(self, ttl=None):
         """Get whether or not the element is selected
@@ -115,7 +145,7 @@ class SeElements(Elements, Browser):
         """
         def callback(elements):
             return elements.item.is_selected() if elements.items else False
-        return self.with_update(callback, ttl=ttl)
+        return self.retried(callback, update=True, ttl=ttl)
 
     def text(self, ttl=None):
         """Return the text
@@ -128,7 +158,7 @@ class SeElements(Elements, Browser):
         """
         def callback(elements):
             return elements.item.text if elements.items else None
-        return self.with_update(callback, ttl=ttl)
+        return self.retried(callback, update=True, ttl=ttl)
 
     def tag_name(self, ttl=None):
         """Return the tag name
@@ -141,7 +171,7 @@ class SeElements(Elements, Browser):
         """
         def callback(elements):
             return elements.item.tag_name if elements.items else None
-        return self.with_update(callback, ttl=ttl)
+        return self.retried(callback, update=True, ttl=ttl)
 
     def value(self, ttl=None):
         """Get the value
@@ -155,7 +185,7 @@ class SeElements(Elements, Browser):
         def callback(elements):
             return elements.item.get_attribute('value') \
                    if elements.items else None
-        return self.with_update(callback, ttl=ttl)
+        return self.retried(callback, update=True, ttl=ttl)
 
     def attribute(self, name, ttl=None):
         """Get the attribute with the given name
@@ -168,9 +198,9 @@ class SeElements(Elements, Browser):
         :returns: The attribute of the first element
         """
         def callback(elements):
-            return elements.item.get_attribute(name) \
-                   if elements.items else None
-        return self.with_update(callback, ttl=ttl)
+            return \
+                elements.item.get_attribute(name) if elements.items else None
+        return self.retried(callback, update=True, ttl=ttl)
 
     def clear(self, ttl=None):
         """Clear the contents of the elements
@@ -178,9 +208,7 @@ class SeElements(Elements, Browser):
         :param ttl: The minimum number of seconds to keep retrying
         :returns: ``self``
         """
-        return self.foreach(
-            lambda elements: elements.item.clear(),
-            ttl=ttl if ttl else self.ttl)
+        return self.foreach(lambda elements: elements.item.clear(), ttl=ttl)
 
     def click(self, pause=0, ttl=None):
         """Click the element
@@ -193,9 +221,7 @@ class SeElements(Elements, Browser):
         :returns: ``self``
         """
         return self.foreach(
-            lambda elements: elements.item.click(),
-            pause=pause,
-            ttl=ttl if ttl else self.ttl)
+            lambda elements: elements.item.click(), pause=pause, ttl=ttl)
 
     def select(self, i=None, value=None, text=None, ttl=None):
         """Select the element
@@ -220,8 +246,7 @@ class SeElements(Elements, Browser):
                 s.select_by_visible_text(text)
             else:
                 raise ValueError("i, value, or text must be provided")
-        return self.foreach(
-            callback, ttl=ttl if ttl else self.ttl)
+        return self.foreach(callback, ttl=ttl)
 
     def deselect(self, i=None, value=None, text=None, ttl=None):
         """Select the element
@@ -246,29 +271,27 @@ class SeElements(Elements, Browser):
                 s.deselect_by_visible_text(text)
             else:
                 s.deselect_all()
-        return self.foreach(
-            callback, ttl=ttl if ttl else self.ttl)
+        return self.foreach(callback, ttl=ttl)
 
     def write(self, text, ttl=None):
         """Write text to an element
 
         Instead of just setting the value of an item, this will "write" the
-        text by simulting sending of key press commands.
+        text by simulating sending of key press commands.
 
         :param text: The text to write
         :param ttl: The minimum number of seconds to keep retrying
         :returns: ``self``
         """
         return self.foreach(
-            lambda elements: elements.item.send_keys(text),
-            ttl=ttl if ttl else self.ttl)
+            lambda elements: elements.item.send_keys(text), ttl=ttl)
 
     def closest(self, selector, ttl=None):
-        """Find the closest element maching the selector.
+        """Find the closest element matching the selector.
 
         :param selector: The selector to use
         :param ttl: The minimum number of seconds to keep retrying
-        :returns: The closest element maching the :attr:`selector`
+        :returns: The closest element matching the :attr:`selector`
         """
         raise NotImplementedError()
 
@@ -302,7 +325,7 @@ class SeElements(Elements, Browser):
         :returns: An :class:`Elements` object containing the web elements that
                   match the :attr:`selector`
         """
-        ttl = ttl if ttl else self.ttl
+        ttl = ttl if ttl is not None else self.ttl
         def callback(elements):
             def inner(e):
                 matches = e.item.find_elements_by_css_selector(selector)
@@ -333,9 +356,13 @@ class SeElements(Elements, Browser):
         :returns: An :class:`Elements` object containing the web elements that
                   match the :attr:`selector`
         """
-        return self.find(
-            selector, only_displayed=only_displayed, wait=True, ttl=ttl)\
-            .insist(lambda e: e.is_displayed())
+        s = self.find(
+            selector, only_displayed=only_displayed, wait=True, ttl=ttl)
+        if only_displayed:
+            s.insist(lambda e: e.is_displayed())
+        else:
+            s.insist(lambda e: len(e) > 0)
+        return s
 
     def xpath(self, selector, only_displayed=True, wait=False, ttl=None):
         """Find the elements that match the given xpath selector
@@ -357,7 +384,7 @@ class SeElements(Elements, Browser):
         :returns: An :class:`Elements` object containing the web elements that
                   match the :attr:`selector`
         """
-        ttl = ttl if ttl else self.ttl
+        ttl = ttl if ttl is not None else self.ttl
         def callback(elements):
             def inner(e):
                 matches = e.item.find_elements_by_xpath(selector)
@@ -401,7 +428,7 @@ class SeElements(Elements, Browser):
         :returns: An :class:`Elements` object containing the web elements that
                   match the :attr:`selector`
         """
-        ttl = ttl if ttl else self.ttl
+        ttl = ttl if ttl is not None else self.ttl
         if exact:
             def callback(elements):
                 def inner(e):
@@ -454,7 +481,7 @@ class SeElements(Elements, Browser):
         """
         def callback(elements):
             return elements.browser.title
-        return self.with_update(callback, ttl=ttl)
+        return self.retried(callback, update=True, ttl=ttl)
 
     def source(self, ttl=None):
         """Get the source of the page
@@ -464,7 +491,7 @@ class SeElements(Elements, Browser):
         """
         def callback(elements):
             return elements.browser.page_source
-        return self.with_update(callback, ttl=ttl)
+        return self.retried(callback, update=True, ttl=ttl)
 
     def navigate(self, url, ttl=None):
         """Navigate the browser to the given URL
@@ -473,7 +500,7 @@ class SeElements(Elements, Browser):
         :param ttl: The minimum number of seconds to keep retrying
         :returns: ``self``
         """
-        self.with_retry(lambda: self.browser.get(url), ttl=ttl)
+        self.retried(lambda: self.browser.get(url), update=False)
         return self
 
     def refresh(self):
@@ -506,10 +533,8 @@ class SeElements(Elements, Browser):
         """
         if async:
             raise NotImplementedError("Can't perform async scripts yet. Sorry.")
-        ttl = ttl if ttl else self.ttl
-        results = with_retry(
-            lambda: self.browser.execute_script(script),
-            WebDriverException, ttl=ttl)
+        results = self.retried(
+            lambda: self.browser.execute_script(script), update=False)
         if not callback:
             return results
         else:
@@ -544,10 +569,10 @@ class SeElements(Elements, Browser):
         """Scroll to the given position on the page
 
         :param x: The x position on the page. This can either be a number
-                  (pixels from the left) or a javascript string that evalutes
+                  (pixels from the left) or a javascript string that evaluates
                   to a position (e.g. ``document.body.scrollWidth``)
         :param y: The y position on the page. This can either be a number
-                  (pixels from the top) or a javascript string that evalutes
+                  (pixels from the top) or a javascript string that evaluates
                   to a position (e.g. ``document.body.scrollHeight``)
         :param sleep: The number of seconds to sleep after the command to make
                       sure the command has been run
@@ -562,7 +587,7 @@ class SeElements(Elements, Browser):
         """Scroll to the top of the page
 
         :param x: The x position on the page. This can either be a number
-                  (pixels from the left) or a javascript string that evalutes
+                  (pixels from the left) or a javascript string that evaluates
                   to a position (e.g. ``document.body.scrollHeight``)
         :param sleep: The number of seconds to sleep after the command to make
                       sure the command has been run
@@ -574,7 +599,7 @@ class SeElements(Elements, Browser):
         """Scroll to the bottom of the page
 
         :param x: The x position on the page. This can either be a number
-                  (pixels from the left) or a javascript string that evalutes
+                  (pixels from the left) or a javascript string that evaluates
                   to a position (e.g. ``document.body.scrollHeight``)
         :param sleep: The number of seconds to sleep after the command to make
                       sure the command has been run
@@ -588,7 +613,7 @@ class SeElements(Elements, Browser):
         :param fn: The function to run
         :param ttl: The minimum number of seconds to keep retrying
         """
-        return self.with_retry(fn, ttl=ttl)
+        return self.retried(lambda e: fn, update=False, ttl=ttl)
 
     def switch_to_active_element(self):
         """Get the active element
