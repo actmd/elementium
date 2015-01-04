@@ -8,121 +8,12 @@ import abc
 import collections
 import time
 
-
-DEFAULT_SLEEP_TIME = 0.25
-DEFAULT_TTL = 20
-
-
-def with_retry(fn, exception_class, ttl=DEFAULT_TTL):
-    """Retry a function for :attr:`ttl` seconds
-
-    :param fn: The function to call
-    :param exception_class: The exception class that we want to catch when
-                            class :attr:`fn`.
-    :param ttl: The minimum number of seconds to keep retrying
-    :returns: The result of running :attr:`fn`
-    """
-    sleep_time = DEFAULT_SLEEP_TIME
-    while ttl > 0:
-        try:
-            return fn()
-        except Exception as exc:
-            if isinstance(exc, exception_class):
-                time.sleep(sleep_time)
-                ttl -= sleep_time
-                sleep_time += min(sleep_time + sleep_time, 1)
-            else:
-                raise
-    return fn()
-
-
-def with_update(fn, elements, exception_class, ttl=DEFAULT_TTL):
-    """Retry a function for :attr:`ttl` seconds
-
-    Unlike :func:`with_retry`, this will update the :attr:`elements` on each
-    failure instead of just retrying.
-
-    :param fn: The function to call
-    :param exception_class: The exception class that we want to catch when
-                            class :attr:`fn`.
-    :returns: The result of running :attr:`fn`
-    """
-    sleep_time = DEFAULT_SLEEP_TIME
-    while ttl > 0:
-        try:
-            return fn(elements)
-        except Exception as exc:
-            if isinstance(exc, exception_class):
-                elements.update()
-                time.sleep(sleep_time)
-                ttl -= sleep_time
-                sleep_time += min(sleep_time + sleep_time, 1)
-            else:
-                raise
-    return fn(elements)
-
-
-class TimeOutError(Exception):
-    """A timeout error"""
-    pass
-
-
-class Waiter(object):
-    """Wait for something to happen"""
-
-    __metaclass__ = abc.ABCMeta
-
-    def __init__(self, elements, ttl=DEFAULT_TTL):
-        """Create a new Waiter
-
-        :param elements: The :class:`Elements` we want to wait on.
-        :param ttl: The time to wait on this elements.
-        """
-        self.elements = elements
-        self.ttl = ttl
-
-    @abc.abstractmethod
-    def until(self, ttl=None, **kwargs):
-        """Wait until a particular condition is met
-
-        :param ttl: The minimum number of seconds to keep retrying. This will
-                    override what is passed to the constructor
-        :param \*\*kwargs: Any other parameters
-        :returns: The :class:`Elements` object that was passed to the
-                  constructor
-        """
-        return
-
-
-class ConditionWaiter(Waiter):
-    """Wait for a condition to be met"""
-
-    def until(self, fn, ttl=DEFAULT_TTL):
-        """Wait until a particular condition is met
-
-        :param fn: The function that corresponds to the condition that must be
-                   met. Once this function returns ``True``, it will return.
-                   If ``True`` is not returned in the provided amount of time,
-                   a :class:`TimeOutError`
-        :param ttl: The minimum number of seconds to keep retrying. This will
-                    override what is passed to the constructor
-        :returns: The :class:`Elements` object that was passed to the
-                  constructor
-        """
-        ttl = ttl if ttl else self.ttl
-        start_time = time.time()
-        ok = False
-        while time.time() - start_time < ttl:
-            if not fn(self.elements):
-                time.sleep(DEFAULT_SLEEP_TIME)
-                self.elements.update()
-            else:
-                ok = True
-                break
-
-        if not ok:
-            raise TimeOutError()
-        return self.elements
+from elementium.exc import TimeOutError
+from elementium.util import (
+    DEFAULT_TTL,
+    ignored
+)
+from elementium.waiters import ConditionElementsWaiter
 
 
 class Browser(object):
@@ -247,7 +138,7 @@ class Elements(collections.MutableSequence):
 
     def __repr__(self):
         return '{}({!r})'.format(self.__class__.__name__, self.items)
-    def __setitem__(self, i, value):  self.items[i] = value
+    def __setitem__(self, i, value): self.items[i] = value
     def __delitem__(self, i): del self.items[i]
     def __getitem__(self, i): return self.get(i)
     def __len__(self): return len(self.items)
@@ -284,30 +175,20 @@ class Elements(collections.MutableSequence):
         return
 
     @abc.abstractmethod
-    def with_retry(self, fn, ttl=DEFAULT_TTL):
+    def retried(self, fn, update=True, ttl=None):
         """Retry a function for :attr:`ttl` seconds
 
         :param fn: The function to call
-        :param ttl: The minimum number of seconds to keep retrying
-        :returns: The result of running :attr:`fn`
-        """
-        return
-
-    @abc.abstractmethod
-    def with_update(self, fn, elements, ttl=DEFAULT_TTL):
-        """Retry a function for :attr:`ttl` seconds
-
-        Unlike :func:`with_retry`, this will update the :attr:`elements` on each
-        failure instead of just retrying.
-
-        :param fn: The function to call
+        :param update: Whether or not to call update() on self between each
+                       retry.
+        :param ttl: The number of seconds to retry.
         :returns: The result of running :attr:`fn`
         """
         return
 
     @abc.abstractmethod
     def is_displayed(self, ttl=None):
-        """Get whether or not the element is visibile
+        """Get whether or not the element is visible
 
         If there are multiple items in this object, the visibility of the first
         element will be returned.
@@ -413,7 +294,7 @@ class Elements(collections.MutableSequence):
         """Write text to an element
 
         Instead of just setting the value of an item, this will "write" the
-        text by simulting sending of key press commands.
+        text by simulating sending of key press commands.
 
         :param text: The text to write
         :param ttl: The minimum number of seconds to keep retrying
@@ -422,11 +303,11 @@ class Elements(collections.MutableSequence):
 
     @abc.abstractmethod
     def closest(self, selector, ttl=None):
-        """Find the closest element maching the selector.
+        """Find the closest element matching the selector.
 
         :param selector: The selector to use
         :param ttl: The minimum number of seconds to keep retrying
-        :returns: The closest element maching the :attr:`selector`
+        :returns: The closest element matching the :attr:`selector`
         """
         return
 
@@ -491,18 +372,18 @@ class Elements(collections.MutableSequence):
                       in the :attr:`ttl` calculation.
         :param ttl: The minimum number of seconds to keep retrying
         :returns: If :attr:`return_results` is ``True``, then this will return
-                  a list of lenth equal to ``len(self)`` where the i-th entry
+                  a list of length equal to ``len(self)`` where the i-th entry
                   in the list is the result of calling :attr:`fn` on the i-th
                   item in ``self``. If :attr:`return_results` is ``False``,
                   then ``self`` is returned.
         """
-        ttl = ttl if ttl else self.ttl
+        ttl = ttl if ttl is not None else self.ttl
         retvals = []
         start_time = time.time()
         for element in self:
             if ttl:
                 ttl = ttl - (time.time() - start_time)
-            retvals.append(element.with_update(fn, ttl=ttl))
+            retvals.append(element.retried(fn, update=True, ttl=ttl))
             if pause:
                 time.sleep(pause)
         if return_results:
@@ -530,8 +411,8 @@ class Elements(collections.MutableSequence):
         :raise:
             :TimeOutError: If the time runs out
         """
-        ttl = ttl if ttl else self.ttl
-        return ConditionWaiter(self).until(fn, ttl=ttl)
+        ttl = ttl if ttl is not None else self.ttl
+        return ConditionElementsWaiter(self).wait(fn, ttl=ttl)
 
     def insist(self, fn, ttl=None):
         """Wait until a particular condition is met and then assert
@@ -558,13 +439,10 @@ class Elements(collections.MutableSequence):
         :param ttl: The minimum number of seconds to keep retrying
         :returns: ``self``
         """
-        ttl = ttl if ttl else self.ttl
-        retval = None
-        try:
-            retval = ConditionWaiter(self).until(fn, ttl=ttl)
-        except TimeOutError:
-            pass
-        assert fn(retval)
+        ttl = ttl if ttl is not None else self.ttl
+        with ignored(TimeOutError):
+            ConditionElementsWaiter(self).wait(fn, ttl=ttl)
+        assert fn(self)
         return self
 
     def update(self, propagate=True):
