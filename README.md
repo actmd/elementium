@@ -322,6 +322,11 @@ The following are simply more reliable versions of their Selenium counterparts. 
 * `set_window_size()`
 * `switch_to_active_element()`
 
+Examples
+--------
+
+There are a couple examples in the aptly named examples directory. Take a look there for fully functioning source code.
+
 The Future
 ----------
 

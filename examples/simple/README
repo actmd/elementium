@@ -1,0 +1,16 @@
+This example shows the very basics of Elementium using the Selenium Firefox
+driver.
+
+Prerequisites:
+
+    1. Selenium
+
+        pip install -U selenium
+
+    2. Firefox
+
+        https://www.mozilla.org/en-US/firefox/new/
+
+To run simply run behave:
+
+    % python simple.py
