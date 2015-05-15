@@ -30,8 +30,12 @@ class Waiter(object):
         """
         if n and ttl:
             raise ValueError("Cannot set both n and ttl")
-        if pause < 0:
-            raise ValueError("pause must be positive")
+        if n < 0:
+            raise ValueError("n cannot be negative")
+        if ttl and ttl < 0:
+            raise ValueError("ttl cannot be negative")
+        if pause and pause < 0:
+            raise ValueError("pause cannot be negative")
         self.n = n
         self.ttl = ttl if ttl else 0
         self.pause = pause
@@ -62,9 +66,13 @@ class Waiter(object):
                  passed in are returned, or the ones from ``self`` are
                  returned.
         :raise:
-            :ValueError: if either both n and ttl are set, or neither n nor
-                         ttl are set
+            :ValueError: if either both n and ttl are set, neither n nor
+                         ttl are set, if either n or ttl are negative
         """
+        if n is not None and n < 0:
+            raise ValueError("n cannot be negative")
+        if ttl is not None and ttl < 0:
+            raise ValueError("ttl cannot be negative")
         n = n if n > 0 else 0
         ttl = ttl if ttl >= 0 else 0
         if n and ttl:
@@ -174,7 +182,9 @@ class ExceptionRetryElementsWaiter(ElementsWaiter):
         n, ttl = self._check_args(n, ttl)
         etime = time.time() + ttl
         pause = self.pause
+        ran_once = False
         while time.time() < etime or n > 0:
+            ran_once = True
             n -= 1
             try:
                 return fn(self.elements)
@@ -184,7 +194,14 @@ class ExceptionRetryElementsWaiter(ElementsWaiter):
                 if self.elements:
                     self.elements.update()
         else:
-            raise
+            if ran_once:
+                raise
+            else:
+                raise RuntimeError(
+                    "Waiter was never run. This could mean that the n ({}) or "
+                    "ttl ({}) were negative or that your ttl was too small "
+                    "causing the waiter to never to be executed.".format(
+                        n, ttl))
 
 
 class ConditionElementsWaiter(ElementsWaiter):
