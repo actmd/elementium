@@ -40,9 +40,13 @@ class WaiterTestCase(unittest.TestCase):
         with self.assertRaises(ValueError):
             WaiterTestImpl(n=1, ttl=1)
 
-    def test_cannot_set_negative_pause(self):
+    def test_cannot_set_negative(self):
         with self.assertRaises(ValueError):
             WaiterTestImpl(pause=-1)
+        with self.assertRaises(ValueError):
+            WaiterTestImpl(n=1, ttl=-1)
+        with self.assertRaises(ValueError):
+            WaiterTestImpl(n=-1, ttl=1)
 
     def test_check_args_with_none_arguments(self):
         w = WaiterTestImpl()
@@ -63,12 +67,21 @@ class WaiterTestCase(unittest.TestCase):
 
     def test_check_args_with_valid_arguments(self):
         w = WaiterTestImpl()
-        self.assertTrue(w._check_args(n=-1, ttl=1))
         self.assertTrue(w._check_args(n=None, ttl=1))
         self.assertTrue(w._check_args(n=0, ttl=1))
-        self.assertTrue(w._check_args(n=1, ttl=-1))
         self.assertTrue(w._check_args(n=1, ttl=None))
         self.assertTrue(w._check_args(n=1, ttl=0))
+
+    def test_check_args_does_not_allow_negative_values(self):
+        w = WaiterTestImpl()
+        with self.assertRaises(ValueError):
+            w._check_args(n=None, ttl=-1)
+        with self.assertRaises(ValueError):
+            w._check_args(n=-1, ttl=None)
+        with self.assertRaises(ValueError):
+            w._check_args(n=1, ttl=-1)
+        with self.assertRaises(ValueError):
+            w._check_args(n=-1, ttl=1)
 
 
 class ExceptionRetryWaiterMixin(object):
@@ -116,7 +129,7 @@ class ExceptionRetryWaiterMixin(object):
         self.waiter(TypeError).wait(f, n=2)
         self.assertEqual(f.call_count, 1)
 
-    def test_raises_non_registered_exception(self):
+    def test_does_raise_non_registered_exception(self):
         f = MagicMock(side_effect=ValueError('Oops'))
         with self.assertRaises(ValueError):
             self.waiter(TypeError).wait(f, n=2)
@@ -135,6 +148,18 @@ class ExceptionRetryElementsWaiterTestCase(
 
     def waiter(self, exceptions):
         return ExceptionRetryElementsWaiter(MagicMock(), exceptions, pause=0.1)
+
+    def test_does_raises_exception_if_waiter_never_run(self):
+
+        waiter = ExceptionRetryElementsWaiter(MagicMock(), TypeError)
+
+        # Need to set them after the fact to circumvent the error checking
+        waiter.n = -1
+        waiter.ttl = -1
+
+        with self.assertRaises(RuntimeError) as context:
+            waiter.wait(MagicMock(side_effect=TypeError('Oops')), ttl=0, n=0)
+        self.assertIn("Waiter was never run.", context.exception.message)
 
 
 class ConditionElementsWaiterTestCase(unittest.TestCase):
