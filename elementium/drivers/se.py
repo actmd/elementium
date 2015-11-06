@@ -238,11 +238,11 @@ class SeElements(Elements, Browser):
         """
         def callback(elements):
             s = Select(elements.item)
-            if i:
+            if i is not None:
                 s.select_by_index(i)
-            elif value:
+            elif value is not None:
                 s.select_by_value(value)
-            elif text:
+            elif text is not None:
                 s.select_by_visible_text(text)
             else:
                 raise ValueError("i, value, or text must be provided")
@@ -263,11 +263,11 @@ class SeElements(Elements, Browser):
         """
         def callback(elements):
             s = Select(elements.item)
-            if i:
+            if i is not None:
                 s.deselect_by_index(i)
-            elif value:
+            elif value is not None:
                 s.deselect_by_value(value)
-            elif text:
+            elif text is not None:
                 s.deselect_by_visible_text(text)
             else:
                 s.deselect_all()
