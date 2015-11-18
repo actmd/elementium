@@ -69,12 +69,17 @@ class Waiter(object):
             :ValueError: if either both n and ttl are set, neither n nor
                          ttl are set, if either n or ttl are negative
         """
-        if n is not None and n < 0:
-            raise ValueError("n cannot be negative")
-        if ttl is not None and ttl < 0:
-            raise ValueError("ttl cannot be negative")
-        n = n if n > 0 else 0
-        ttl = ttl if ttl >= 0 else 0
+        if n is not None:
+            if n < 0:
+                raise ValueError("n cannot be negative")
+        else:
+            n = 0
+
+        if ttl is not None:
+            if ttl < 0:
+                raise ValueError("ttl cannot be negative")
+        else:
+            ttl = 0
         if n and ttl:
             raise ValueError("Cannot set both n and ttl")
         if not n and not ttl:
@@ -122,12 +127,12 @@ class ExceptionRetryWaiter(Waiter):
             n -= 1
             try:
                 return fn()
-            except self.exceptions:
+            except self.exceptions as exc:
                 if time.time() < etime or n > 0:
                     time.sleep(pause)
                     pause = min(pause + pause, pause * 4)
                 else:
-                    raise
+                    raise exc
 
 
 class ElementsWaiter(Waiter):
@@ -182,20 +187,20 @@ class ExceptionRetryElementsWaiter(ElementsWaiter):
         n, ttl = self._check_args(n, ttl)
         etime = time.time() + ttl
         pause = self.pause
-        ran_once = False
+        exc_from_run = None
         while time.time() < etime or n > 0:
-            ran_once = True
             n -= 1
             try:
                 return fn(self.elements)
-            except self.exceptions:
+            except self.exceptions as exc:
                 time.sleep(pause)
                 pause = min(pause + pause, pause * 4)
+                exc_from_run = exc
                 if self.elements:
                     self.elements.update()
         else:
-            if ran_once:
-                raise
+            if exc_from_run:
+                raise exc_from_run
             else:
                 raise RuntimeError(
                     "Waiter was never run. This could mean that the n ({}) or "
