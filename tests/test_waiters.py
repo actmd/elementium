@@ -159,7 +159,7 @@ class ExceptionRetryElementsWaiterTestCase(
 
         with self.assertRaises(RuntimeError) as context:
             waiter.wait(MagicMock(side_effect=TypeError('Oops')), ttl=0, n=0)
-        self.assertIn("Waiter was never run.", context.exception.message)
+        self.assertIn("Waiter was never run.", str(context.exception))
 
 
 class ConditionElementsWaiterTestCase(unittest.TestCase):
