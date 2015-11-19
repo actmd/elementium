@@ -1,5 +1,6 @@
 Elementium
 ==========
+![](https://travis-ci.org/actmd/elementium.svg?branch=master)
 
 [http://github.com/actmd/elementium](http://github.com/actmd/elementium)
 
@@ -62,6 +63,10 @@ cd elementium
 python setup.py install
 ```
 
+Compatability
+-------------
+
+Elementium has been tested for Python 2.6, 3.2, 3.3, 3.4, and pypy using [Travis CI](https://travis-ci.org/actmd/elementium)
 
 Usage
 -----
