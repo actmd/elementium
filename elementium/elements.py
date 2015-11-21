@@ -114,7 +114,7 @@ class Elements(collections.MutableSequence):
 
     __metaclass__ = abc.ABCMeta
     
-    def __init__(self, browser, context, fn, config=None):
+    def __init__(self, browser, context=None, fn=None, config=None, lazy=None):
         """Create a list of elements
 
         :param browser: The base browser object that we are using.
@@ -123,7 +123,18 @@ class Elements(collections.MutableSequence):
                         rise to this set of :class:`Elements`.
         :param fn: The function to call to populate the list of browser
                    elements this list of :class:`Elements` refers to.
-        :param config: Optional other configuration details in a dictionary
+        :param config: Optional other configuration details in a dictionary.
+                       Valid options are:
+
+                            `lazy`: Whether or not to lazy load the items.
+
+        :param lazy: Whether or not to lazy load the items. If this is ``True``
+                     then the :attr:`fn` is evaluated on first access.
+                     If, ``False``, then :attr:`fn` is evaluated right away
+                     by a call to the update() method. This lazy parameter
+                     can also be set in the config dict. Note, that whatever
+                     is passed here will OVERWRITE what may be in the config
+                     object. Note, by default lazy will be set to ``True``
         """
         super(Elements, self).__init__()
         self.browser = browser
@@ -134,7 +145,13 @@ class Elements(collections.MutableSequence):
         self.config = config if config else {}
         if not self.config.get('ttl'):
             self.config['ttl'] = DEFAULT_TTL
-        self.update(propagate=False)
+        if lazy is not None:
+            self.config['lazy'] = lazy
+        else:
+            self.config['lazy'] = True
+        self._items = None
+        if not self.lazy:
+            self.update(propagate=False)
 
     def __repr__(self):
         return '{}({!r})'.format(self.__class__.__name__, self.items)
@@ -145,6 +162,13 @@ class Elements(collections.MutableSequence):
     def __iter__(self): return ElementsIterator(self)
     def __contains__(self, item): return item in self.items
     def insert(self, index, value): self.items.insert(index, value)
+
+    @property
+    def items(self):
+        """The items that this elements object refers to"""
+        if not self._items:
+            self.update(propagate=True)
+        return self._items
 
     @property
     def item(self):
@@ -160,6 +184,16 @@ class Elements(collections.MutableSequence):
     def ttl(self, value):
         """The default ttl"""
         self.config['ttl'] = value
+
+    @property
+    def lazy(self):
+        """The default lazy"""
+        return self.config['lazy']
+
+    @lazy.setter
+    def lazy(self, value):
+        """The default lazy"""
+        self.config['lazy'] = value
 
     @abc.abstractmethod
     def get(self, i):
@@ -454,5 +488,5 @@ class Elements(collections.MutableSequence):
         """
         if propagate and self.context:
             self.context.update(propagate=True)
-        self.items = self.fn(self.context)
+        self._items = self.fn(self.context)
         return self
