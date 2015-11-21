@@ -145,10 +145,7 @@ class Elements(collections.MutableSequence):
         self.config = config if config else {}
         if not self.config.get('ttl'):
             self.config['ttl'] = DEFAULT_TTL
-        if lazy is not None:
-            self.config['lazy'] = lazy
-        else:
-            self.config['lazy'] = True
+        self.config['lazy'] = lazy if lazy is not None else True
         self._items = None
         if not self.lazy:
             self.update(propagate=False)
