@@ -145,10 +145,10 @@ class Elements(collections.MutableSequence):
         self.config = config if config else {}
         if not self.config.get('ttl'):
             self.config['ttl'] = DEFAULT_TTL
-        self.config['lazy'] = lazy if lazy is not None else True
+        self.config['lazy'] = lazy if lazy is not None else False
         self._items = None
         if not self.lazy:
-            self.update(propagate=False)
+            self.items
 
     def __repr__(self):
         return '{}({!r})'.format(self.__class__.__name__, self.items)
@@ -164,7 +164,7 @@ class Elements(collections.MutableSequence):
     def items(self):
         """The items that this elements object refers to"""
         if not self._items:
-            self.update(propagate=True)
+            self.update(propagate=False)
         return self._items
 
     @property

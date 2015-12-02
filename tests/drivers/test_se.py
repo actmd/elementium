@@ -20,25 +20,25 @@ def suite():
 
 class SeElementsTestCase(unittest.TestCase):
 
-    def test_init_items_are_lazy_loaded_by_default(self):
+    def test_init_items_are_loaded_by_default(self):
 
         with patch.object(SeElements, 'update',
                           return_value=True) as mock_update:
             SeElements(None, context=None, fn='.foo')
-            self.assertFalse(mock_update.called)
+            self.assertTrue(mock_update.called)
 
-    def test_init_items_can_be_force_loaded(self):
+    def test_init_items_can_be_lazy_loaded(self):
 
         with patch.object(SeElements, 'update',
                           return_value=True) as mock_update:
-            SeElements(None, context=None, fn='.foo', lazy=False)
-            self.assertTrue(mock_update.called)
+            SeElements(None, context=None, fn='.foo', lazy=True)
+            self.assertFalse(mock_update.called)
 
     def test_update_is_called_on_first_access(self):
 
         with patch.object(SeElements, 'update',
                           return_value=True) as mock_update:
-            e = SeElements(None, context=None, fn='.foo')
+            e = SeElements(None, context=None, fn='.foo', lazy=True)
             self.assertFalse(mock_update.called)
 
             # Get the items

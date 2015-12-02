@@ -40,25 +40,25 @@ class ElementsTestImpl(Elements):
 
 class ElementsTestCase(unittest.TestCase):
 
-    def test_init_items_are_lazy_loaded_by_default(self):
+    def test_init_items_are_loaded_by_default(self):
 
         with patch.object(ElementsTestImpl, 'update',
                           return_value=True) as mock_update:
             ElementsTestImpl(None, context=None, fn='.foo')
-            self.assertFalse(mock_update.called)
+            self.assertTrue(mock_update.called)
 
-    def test_init_items_can_be_force_loaded(self):
+    def test_init_items_can_be_lazy_loaded(self):
 
         with patch.object(ElementsTestImpl, 'update',
                           return_value=True) as mock_update:
-            ElementsTestImpl(None, context=None, fn='.foo', lazy=False)
-            self.assertTrue(mock_update.called)
+            ElementsTestImpl(None, context=None, fn='.foo', lazy=True)
+            self.assertFalse(mock_update.called)
 
     def test_update_is_called_on_first_access(self):
 
         with patch.object(ElementsTestImpl, 'update',
                           return_value=True) as mock_update:
-            e = ElementsTestImpl(None, context=None, fn='.foo')
+            e = ElementsTestImpl(None, context=None, fn='.foo', lazy=True)
             self.assertFalse(mock_update.called)
 
             # Get the items
