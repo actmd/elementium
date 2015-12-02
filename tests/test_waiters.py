@@ -1,4 +1,3 @@
-"""Elementium elements"""
 from __future__ import absolute_import
 
 __author__ = "Patrick R. Schmid"

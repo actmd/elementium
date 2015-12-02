@@ -1,0 +1,33 @@
+This example shows how Elementium can be used with Behave (http://pythonhosted.org/behave/)
+
+Prerequisites:
+
+    1. Selenium
+
+        pip install -U selenium
+
+    2. Behave
+
+        pip install -U behave
+
+    3. Firefox
+
+        https://www.mozilla.org/en-US/firefox/new/
+
+To run simply run behave:
+
+    % behave
+
+The output you should see is something of the form:
+
+    Feature: Behave with Elementium # features/example.feature:1
+
+      Scenario: Show that we can run behave with elementium  # features/example.feature:3
+        Given we can access the Google page                  # features/steps/steps.py:5 0.959s
+        When we enter something in the search box            # features/steps/steps.py:10 0.463s
+        Then we see search results                           # features/steps/steps.py:19 0.115s
+
+    1 feature passed, 0 failed, 0 skipped
+    1 scenario passed, 0 failed, 0 skipped
+    3 steps passed, 0 failed, 0 skipped, 0 undefined
+    Took 0m1.538s

@@ -52,7 +52,7 @@ class WebDriverExceptionRetryElementsWaiter(ExceptionRetryElementsWaiter):
 class SeElements(Elements, Browser):
     """Elements making use of the Selenium Web Driver."""
 
-    def __init__(self, browser, context=None, fn=None, config=None):
+    def __init__(self, browser, context=None, fn=None, config=None, lazy=None):
         """Create a list of elements
 
         :param browser: The base browser object that we are using.
@@ -69,9 +69,18 @@ class SeElements(Elements, Browser):
                                also have it's own `ttl`, that can be set, but
                                this will be the default. The default is 20
                                seconds.
+                        `lazy`: Whether or not to lazy load the items.
+
+        :param lazy: Whether or not to lazy load the items. If this is ``True``
+                     then the :attr:`fn` is evaluated on first access.
+                     If, ``False``, then :attr:`fn` is evaluated right away
+                     by a call to the update() method. This lazy parameter
+                     can also be set in the config dict. Note, that whatever
+                     is passed here will OVERWRITE what may be in the config
+                     object. Note, by default lazy will be set to ``True``
         """
         super(SeElements, self).\
-            __init__(browser, context=context, fn=fn, config=config)
+            __init__(browser, context=context, fn=fn, config=config, lazy=lazy)
 
     def get(self, i):
         """Get the i-th item as an :class:`Elements` object
@@ -84,7 +93,8 @@ class SeElements(Elements, Browser):
         :returns: The item as an :class:`Elements` object
         """
         return SeElements(
-            self.browser, self, lambda context: [context.items[i]], self.config)
+            self.browser, context=self, fn=lambda context: [context.items[i]],
+            config=self.config)
 
     def retried(self, fn, update=True, ttl=None):
         """Retry a function for :attr:`ttl` seconds
@@ -303,7 +313,8 @@ class SeElements(Elements, Browser):
         """
         def callback(elements):
             return [elements.item.parent] if elements.items else None
-        return SeElements(self.browser, self, callback, self.config)
+        return SeElements(
+            self.browser, context=self, fn=callback, config=self.config)
 
     def find(self, selector, only_displayed=True, wait=False, ttl=None):
         """Find the elements that match the given selector
@@ -338,7 +349,8 @@ class SeElements(Elements, Browser):
                 ttl=ttl)
             return [item for sublist in results for item in sublist]
 
-        elements = SeElements(self.browser, self, callback, self.config)
+        elements = SeElements(
+            self.browser, context=self, fn=callback, config=self.config)
         if wait:
             return elements.until(lambda e: len(e) > 0, ttl=ttl)
         else:
@@ -397,7 +409,8 @@ class SeElements(Elements, Browser):
                 ttl=ttl)
             return [item for sublist in results for item in sublist]
 
-        elements = SeElements(self.browser, self, callback, self.config)
+        elements = SeElements(
+            self.browser, context=self, fn=callback, config=self.config)
         if wait:
             return elements.until(lambda e: len(e) > 0, ttl=ttl)
         else:
@@ -457,7 +470,8 @@ class SeElements(Elements, Browser):
                     ttl=ttl)
                 return [item for sublist in results for item in sublist]
         
-        elements = SeElements(self.browser, self, callback, self.config)
+        elements = SeElements(
+            self.browser, context=self, fn=callback, config=self.config)
         if wait:
             return elements.until(lambda e: len(e) > 0, ttl=ttl)
         else:
@@ -471,7 +485,8 @@ class SeElements(Elements, Browser):
         """
         def callback(elements):
             return map(lambda e: e.item, filter(fn, elements))
-        return SeElements(self.browser, self, callback, self.config)
+        return SeElements(
+            self.browser, context=self, fn=callback, config=self.config)
 
     def title(self, ttl=None):
         """Get the title of the page
@@ -623,4 +638,5 @@ class SeElements(Elements, Browser):
         def callback(elements):
             return [elements.item.switch_to_active_element()]\
                     if elements.items else None
-        return SeElements(self.browser, self, callback, self.config)
+        return SeElements(
+            self.browser, context=self, fn=callback, config=self.config)
