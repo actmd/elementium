@@ -1,8 +1,6 @@
 """Elemetium elements using the Selenium driver"""
 
-__author__ = "Patrick R. Schmid"
-__email__ = "prschmid@act.md"
-
+from __future__ import absolute_import
 
 import time
 
@@ -22,6 +20,9 @@ from elementium.waiters import (
     ExceptionRetryWaiter,
     ExceptionRetryElementsWaiter
 )
+
+__author__ = "Patrick R. Schmid"
+__email__ = "prschmid@act.md"
 
 
 class WebDriverExceptionRetryWaiter(ExceptionRetryWaiter):
@@ -237,8 +238,8 @@ class SeElements(Elements, Browser):
         """Select the element
 
         If there are multiple elements, each of the elements will be selected.
-        At least one of the attributes :attr:`i`, :attr:`value`, or :attr:`text`
-        must be supplied
+        At least one of the attributes :attr:`i`, :attr:`value`, or
+        :attr:`text` must be supplied
 
         :param i: The index to select
         :param value: The value to match against
@@ -261,9 +262,9 @@ class SeElements(Elements, Browser):
     def deselect(self, i=None, value=None, text=None, ttl=None):
         """Select the element
 
-        If there are multiple elements, each of the elements will be deselected.
-        If :attr:`i`, :attr:`value`, or :attr:`text` are not supplied, all
-        values will be deselected.
+        If there are multiple elements, each of the elements will be
+        deselected. If :attr:`i`, :attr:`value`, or :attr:`text` are not
+        supplied, all values will be deselected.
 
         :param i: The index to select
         :param value: The value to match against
@@ -323,12 +324,13 @@ class SeElements(Elements, Browser):
         :param only_displayed: Whether or not to only return elements that
                                are displayed
         :param wait: Wait until the selector finds at least 1 element. If this
-                     is set to ``True``, the find is retried for the appropriate
-                     number of seconds until at least 1 element is found. This
-                     is different from just setting the :attr:`ttl`, as it is
-                     possible to successfully return from a find with no
-                     elements if the DOM is currently changing. Syntactically,
-                     setting this to ``True`` is equivalent to::
+                     is set to ``True``, the find is retried for the
+                     appropriate number of seconds until at least 1 element is
+                     found. This is different from just setting the
+                     :attr:`ttl`, as it is possible to successfully return
+                     from a find with no elements if the DOM is currently
+                     changing. Syntactically, setting this to ``True`` is
+                     equivalent to::
 
                         elements.find('selector').until(lambda e: len(e) > 0)
 
@@ -341,7 +343,7 @@ class SeElements(Elements, Browser):
             def inner(e):
                 matches = e.item.find_elements_by_css_selector(selector)
                 if only_displayed:
-                    matches = filter(lambda obj: obj.is_displayed(), matches)
+                    matches = [obj for obj in matches if obj.is_displayed()]
                 return matches
             results = elements.foreach(
                 inner,
@@ -383,12 +385,12 @@ class SeElements(Elements, Browser):
         :param only_displayed: Whether or not to only return elements that
                                are displayed
         :param wait: Wait until the selector finds at least 1 element. If this
-                     is set to ``True``, the find is retried for the appropriate
-                     number of seconds until at least 1 element is found. This
-                     is different from just setting the :attr:`ttl`, as it is
-                     possible to successfully return from a find with no
-                     elements if the DOM is currently changing. Syntactically,
-                     setting this to ``True`` is equivalent to::
+                     is set to ``True``, the find is retried for the
+                     appropriate number of seconds until at least 1 element is
+                     found. This is different from just setting the
+                     :attr:`ttl`, as it is possible to successfully return from
+                     a find with no elements if the DOM is currently changing.
+                     Syntactically, setting this to ``True`` is equivalent to::
 
                         elements.xpath('selector').until(lambda e: len(e) > 0)
 
@@ -401,7 +403,7 @@ class SeElements(Elements, Browser):
             def inner(e):
                 matches = e.item.find_elements_by_xpath(selector)
                 if only_displayed:
-                    matches = filter(lambda obj: obj.is_displayed(), matches)
+                    matches = [obj for obj in matches if obj.is_displayed()]
                 return matches
             results = elements.foreach(
                 inner,
@@ -426,12 +428,12 @@ class SeElements(Elements, Browser):
         :param only_displayed: Whether or not to only return elements that
                                are displayed
         :param wait: Wait until the selector finds at least 1 element. If this
-                     is set to ``True``, the find is retried for the appropriate
-                     number of seconds until at least 1 element is found. This
-                     is different from just setting the :attr:`ttl`, as it is
-                     possible to successfully return from a find with no
-                     elements if the DOM is currently changing. Syntactically,
-                     setting this to ``True`` is equivalent to::
+                     is set to ``True``, the find is retried for the
+                     appropriate number of seconds until at least 1 element is
+                     found. This is different from just setting the
+                     :attr:`ttl`, as it is possible to successfully return from
+                     a find with no elements if the DOM is currently changing.
+                     Syntactically, setting this to ``True`` is equivalent to::
 
                         elements.
                             find_link('selector').
@@ -448,7 +450,7 @@ class SeElements(Elements, Browser):
                     matches = e.item.find_elements_by_link_text(selector)
                     if only_displayed:
                         matches =\
-                            filter(lambda obj: obj.is_displayed(), matches)
+                            [obj for obj in matches if obj.is_displayed()]
                     return matches
                 results = elements.foreach(
                     inner,
@@ -462,7 +464,7 @@ class SeElements(Elements, Browser):
                         e.item.find_elements_by_partial_link_text(selector)
                     if only_displayed:
                         matches =\
-                            filter(lambda obj: obj.is_displayed(), matches)
+                            [obj for obj in matches if obj.is_displayed()]
                     return matches
                 results = elements.foreach(
                     inner,
@@ -484,7 +486,7 @@ class SeElements(Elements, Browser):
         :returns: A new SeElements object with the filter applied
         """
         def callback(elements):
-            return map(lambda e: e.item, filter(fn, elements))
+            return [e.item for e in list(filter(fn, elements))]
         return SeElements(
             self.browser, context=self, fn=callback, config=self.config)
 
@@ -547,7 +549,8 @@ class SeElements(Elements, Browser):
                   results from the script that was executed
         """
         if async:
-            raise NotImplementedError("Can't perform async scripts yet. Sorry.")
+            raise NotImplementedError(
+                "Can't perform async scripts yet. Sorry.")
         results = self.retried(
             lambda: self.browser.execute_script(script), update=False)
         if not callback:

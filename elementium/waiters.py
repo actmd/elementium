@@ -1,11 +1,10 @@
 """Elemetium classes used to wait for other things to happen"""
 
-__author__ = "Patrick R. Schmid"
-__email__ = "prschmid@act.md"
+from __future__ import absolute_import
 
 import abc
 import inspect
-import sys
+import six
 import time
 
 from elementium.exc import TimeOutError
@@ -16,7 +15,11 @@ from elementium.util import (
 )
 
 
-class Waiter(object):
+__author__ = "Patrick R. Schmid"
+__email__ = "prschmid@act.md"
+
+
+class Waiter(six.with_metaclass(abc.ABCMeta, object)):
     """Wait for something to happen"""
 
     __metaclass__ = abc.ABCMeta
