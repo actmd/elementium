@@ -13,7 +13,7 @@ To run:
     python simple.py
 """
 
-
+from __future__ import absolute_import
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 

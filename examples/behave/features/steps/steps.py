@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from behave import given, then, when
 from selenium.webdriver.common.keys import Keys
 
