@@ -101,7 +101,7 @@ class ElementsIterator(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         self.idx += 1
         if self.idx < len(self.elements.items):
             return self.elements[self.idx]
