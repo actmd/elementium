@@ -3,7 +3,6 @@ from __future__ import absolute_import
 __author__ = "Patrick R. Schmid"
 __email__ = "prschmid@act.md"
 
-
 import time
 import unittest
 
@@ -34,7 +33,6 @@ class WaiterTestImpl(Waiter):
 
 
 class WaiterTestCase(unittest.TestCase):
-
     def test_cannot_set_both_n_and_ttl_in_init(self):
         with self.assertRaises(ValueError):
             WaiterTestImpl(n=1, ttl=1)
@@ -84,7 +82,6 @@ class WaiterTestCase(unittest.TestCase):
 
 
 class ExceptionRetryWaiterMixin(object):
-
     def waiter(self, exceptions):
         raise NotImplementedError("Subclass must return appropriate waiter")
 
@@ -135,21 +132,18 @@ class ExceptionRetryWaiterMixin(object):
         self.assertEqual(f.call_count, 1)
 
 
-class ExceptionRetryWaiterTestCase(
-        unittest.TestCase, ExceptionRetryWaiterMixin):
-
+class ExceptionRetryWaiterTestCase(unittest.TestCase,
+                                   ExceptionRetryWaiterMixin):
     def waiter(self, exceptions):
         return ExceptionRetryWaiter(exceptions, pause=0.1)
 
 
-class ExceptionRetryElementsWaiterTestCase(
-        unittest.TestCase, ExceptionRetryWaiterMixin):
-
+class ExceptionRetryElementsWaiterTestCase(unittest.TestCase,
+                                           ExceptionRetryWaiterMixin):
     def waiter(self, exceptions):
         return ExceptionRetryElementsWaiter(MagicMock(), exceptions, pause=0.1)
 
     def test_does_raises_exception_if_waiter_never_run(self):
-
         waiter = ExceptionRetryElementsWaiter(MagicMock(), TypeError)
 
         # Need to set them after the fact to circumvent the error checking
@@ -162,14 +156,15 @@ class ExceptionRetryElementsWaiterTestCase(
 
 
 class ConditionElementsWaiterTestCase(unittest.TestCase):
-
-    def test_does_retry_if_function_does_not_evaluate_to_true_with_n_retires(self):
+    def test_does_retry_if_function_does_not_evaluate_to_true_with_n_retires(
+            self):
         f = MagicMock(return_value=False)
         with self.assertRaises(TimeOutError):
             ConditionElementsWaiter(MagicMock(), pause=0.1).wait(f, n=2)
         self.assertEqual(f.call_count, 2)
 
-    def test_does_retry_if_function_does_not_evaluate_to_true_with_ttl_retires(self):
+    def test_does_retry_if_function_does_not_evaluate_to_true_with_ttl_retires(
+            self):
         f = MagicMock(return_value=False)
         start_time = time.time()
         with self.assertRaises(TimeOutError):

@@ -1,11 +1,13 @@
 """Elemetium classes used to wait for other things to happen"""
 
+from __future__ import absolute_import
+import six
+
 __author__ = "Patrick R. Schmid"
 __email__ = "prschmid@act.md"
 
 import abc
 import inspect
-import sys
 import time
 
 from elementium.exc import TimeOutError
@@ -16,10 +18,8 @@ from elementium.util import (
 )
 
 
-class Waiter(object):
+class Waiter(six.with_metaclass(abc.ABCMeta, object)):
     """Wait for something to happen"""
-
-    __metaclass__ = abc.ABCMeta
 
     def __init__(self, n=0, ttl=None, pause=1):
         """Create a new Waiter
@@ -91,7 +91,6 @@ class Waiter(object):
 
 
 class ExceptionRetryWaiter(Waiter):
-
     def __init__(
             self, exceptions, n=0, ttl=DEFAULT_TTL, pause=DEFAULT_SLEEP_TIME):
         """Create a new Waiter
@@ -152,7 +151,6 @@ class ElementsWaiter(Waiter):
 
 
 class ExceptionRetryElementsWaiter(ElementsWaiter):
-
     def __init__(
             self, elements, exceptions, n=0, ttl=DEFAULT_TTL,
             pause=DEFAULT_SLEEP_TIME):

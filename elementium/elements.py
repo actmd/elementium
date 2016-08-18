@@ -1,8 +1,10 @@
 """Elementium elements"""
 
+from __future__ import absolute_import
+import six
+
 __author__ = "Patrick R. Schmid"
 __email__ = "prschmid@act.md"
-
 
 import abc
 import collections
@@ -16,10 +18,8 @@ from elementium.util import (
 from elementium.waiters import ConditionElementsWaiter
 
 
-class Browser(object):
+class Browser(six.with_metaclass(abc.ABCMeta, object)):
     """A base interface for a browser."""
-
-    __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def title(self):
@@ -101,7 +101,7 @@ class ElementsIterator(object):
     def __iter__(self):
         return self
 
-    def next(self):
+    def __next__(self):
         self.idx += 1
         if self.idx < len(self.elements.items):
             return self.elements[self.idx]
@@ -109,11 +109,9 @@ class ElementsIterator(object):
             raise StopIteration
 
 
-class Elements(collections.MutableSequence):
+class Elements(six.with_metaclass(abc.ABCMeta, collections.MutableSequence)):
     """The abstract base class for a list of web elements"""
 
-    __metaclass__ = abc.ABCMeta
-    
     def __init__(self, browser, context=None, fn=None, config=None, lazy=None):
         """Create a list of elements
 
@@ -152,13 +150,27 @@ class Elements(collections.MutableSequence):
 
     def __repr__(self):
         return '{}({!r})'.format(self.__class__.__name__, self.items)
-    def __setitem__(self, i, value): self.items[i] = value
-    def __delitem__(self, i): del self.items[i]
-    def __getitem__(self, i): return self.get(i)
-    def __len__(self): return len(self.items)
-    def __iter__(self): return ElementsIterator(self)
-    def __contains__(self, item): return item in self.items
-    def insert(self, index, value): self.items.insert(index, value)
+
+    def __setitem__(self, i, value):
+        self.items[i] = value
+
+    def __delitem__(self, i):
+        del self.items[i]
+
+    def __getitem__(self, i):
+        return self.get(i)
+
+    def __len__(self):
+        return len(self.items)
+
+    def __iter__(self):
+        return ElementsIterator(self)
+
+    def __contains__(self, item):
+        return item in self.items
+
+    def insert(self, index, value):
+        self.items.insert(index, value)
 
     @property
     def items(self):
@@ -169,7 +181,9 @@ class Elements(collections.MutableSequence):
 
     @property
     def item(self):
-        """Shorthand for first item in ``self.items``. I.e. ``self.items[0]``"""
+        """Shorthand for first item in ``self.items``.
+        I.e. ``self.items[0]``
+        """
         return self.items[0] if self.items else None
 
     @property

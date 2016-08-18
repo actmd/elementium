@@ -1,5 +1,6 @@
 """Behave environment file for behave-elementium example"""
 
+from __future__ import absolute_import
 from selenium import webdriver
 
 from elementium.drivers.se import SeElements

@@ -1,8 +1,10 @@
 """Elemetium elements using the Selenium driver"""
 
+from __future__ import absolute_import
+from six.moves import filter
+
 __author__ = "Patrick R. Schmid"
 __email__ = "prschmid@act.md"
-
 
 import time
 
@@ -25,7 +27,6 @@ from elementium.waiters import (
 
 
 class WebDriverExceptionRetryWaiter(ExceptionRetryWaiter):
-
     def __init__(self, n=0, ttl=DEFAULT_TTL):
         """Create a new Waiter
 
@@ -37,7 +38,6 @@ class WebDriverExceptionRetryWaiter(ExceptionRetryWaiter):
 
 
 class WebDriverExceptionRetryElementsWaiter(ExceptionRetryElementsWaiter):
-
     def __init__(self, elements, n=0, ttl=DEFAULT_TTL):
         """Create a new Waiter
 
@@ -79,14 +79,14 @@ class SeElements(Elements, Browser):
                      is passed here will OVERWRITE what may be in the config
                      object. Note, by default lazy will be set to ``True``
         """
-        super(SeElements, self).\
+        super(SeElements, self). \
             __init__(browser, context=context, fn=fn, config=config, lazy=lazy)
 
     def get(self, i):
         """Get the i-th item as an :class:`Elements` object
 
         Since the items that we store are the raw web elements returned by the
-        driver, this method will wrap them appropriately, to return a 
+        driver, this method will wrap them appropriately, to return a
         :class:`Elements` object.
 
         :param i: The index of the item to return
@@ -108,7 +108,7 @@ class SeElements(Elements, Browser):
         ttl = ttl if ttl is not None else self.ttl
         if ttl:
             if update:
-                return WebDriverExceptionRetryElementsWaiter(self, ttl=ttl).\
+                return WebDriverExceptionRetryElementsWaiter(self, ttl=ttl). \
                     wait(fn)
             else:
                 return WebDriverExceptionRetryWaiter(ttl=ttl).wait(fn)
@@ -127,8 +127,10 @@ class SeElements(Elements, Browser):
         :param ttl: The minimum number of seconds to keep retrying
         :returns: ``True`` if and only if the first element is visible
         """
+
         def callback(elements):
             return elements.item.is_displayed() if elements.items else False
+
         return self.retried(callback, update=True, ttl=ttl)
 
     def is_enabled(self, ttl=None):
@@ -140,8 +142,10 @@ class SeElements(Elements, Browser):
         :param ttl: The minimum number of seconds to keep retrying
         :returns: ``True`` if and only if the first element is enabled
         """
+
         def callback(elements):
             return elements.item.is_enabled() if elements.items else False
+
         return self.retried(callback, update=True, ttl=ttl)
 
     def is_selected(self, ttl=None):
@@ -153,8 +157,10 @@ class SeElements(Elements, Browser):
         :param ttl: The minimum number of seconds to keep retrying
         :returns: ``True`` if and only if the first element is select
         """
+
         def callback(elements):
             return elements.item.is_selected() if elements.items else False
+
         return self.retried(callback, update=True, ttl=ttl)
 
     def text(self, ttl=None):
@@ -166,8 +172,10 @@ class SeElements(Elements, Browser):
         :param ttl: The minimum number of seconds to keep retrying
         :returns: The text of the first element
         """
+
         def callback(elements):
             return elements.item.text if elements.items else None
+
         return self.retried(callback, update=True, ttl=ttl)
 
     def tag_name(self, ttl=None):
@@ -179,8 +187,10 @@ class SeElements(Elements, Browser):
         :param ttl: The minimum number of seconds to keep retrying
         :returns: The tag name of the first element
         """
+
         def callback(elements):
             return elements.item.tag_name if elements.items else None
+
         return self.retried(callback, update=True, ttl=ttl)
 
     def value(self, ttl=None):
@@ -192,9 +202,11 @@ class SeElements(Elements, Browser):
         :param ttl: The minimum number of seconds to keep retrying
         :returns: The value of the first element
         """
+
         def callback(elements):
             return elements.item.get_attribute('value') \
-                   if elements.items else None
+                if elements.items else None
+
         return self.retried(callback, update=True, ttl=ttl)
 
     def attribute(self, name, ttl=None):
@@ -207,9 +219,11 @@ class SeElements(Elements, Browser):
         :param ttl: The minimum number of seconds to keep retrying
         :returns: The attribute of the first element
         """
+
         def callback(elements):
             return \
                 elements.item.get_attribute(name) if elements.items else None
+
         return self.retried(callback, update=True, ttl=ttl)
 
     def clear(self, ttl=None):
@@ -237,8 +251,8 @@ class SeElements(Elements, Browser):
         """Select the element
 
         If there are multiple elements, each of the elements will be selected.
-        At least one of the attributes :attr:`i`, :attr:`value`, or :attr:`text`
-        must be supplied
+        At least one of the attributes :attr:`i`, :attr:`value`, or
+        :attr:`text` must be supplied
 
         :param i: The index to select
         :param value: The value to match against
@@ -246,6 +260,7 @@ class SeElements(Elements, Browser):
         :param ttl: The minimum number of seconds to keep retrying
         :returns: ``self``
         """
+
         def callback(elements):
             s = Select(elements.item)
             if i is not None:
@@ -256,14 +271,15 @@ class SeElements(Elements, Browser):
                 s.select_by_visible_text(text)
             else:
                 raise ValueError("i, value, or text must be provided")
+
         return self.foreach(callback, ttl=ttl)
 
     def deselect(self, i=None, value=None, text=None, ttl=None):
         """Select the element
 
-        If there are multiple elements, each of the elements will be deselected.
-        If :attr:`i`, :attr:`value`, or :attr:`text` are not supplied, all
-        values will be deselected.
+        If there are multiple elements, each of the elements will be
+        deselected. If :attr:`i`, :attr:`value`, or :attr:`text` are not
+        supplied, all values will be deselected.
 
         :param i: The index to select
         :param value: The value to match against
@@ -271,6 +287,7 @@ class SeElements(Elements, Browser):
         :param ttl: The minimum number of seconds to keep retrying
         :returns: ``self``
         """
+
         def callback(elements):
             s = Select(elements.item)
             if i is not None:
@@ -281,6 +298,7 @@ class SeElements(Elements, Browser):
                 s.deselect_by_visible_text(text)
             else:
                 s.deselect_all()
+
         return self.foreach(callback, ttl=ttl)
 
     def write(self, text, ttl=None):
@@ -311,8 +329,10 @@ class SeElements(Elements, Browser):
         :param ttl: The minimum number of seconds to keep retrying
         :returns: The parent element
         """
+
         def callback(elements):
             return [elements.item.parent] if elements.items else None
+
         return SeElements(
             self.browser, context=self, fn=callback, config=self.config)
 
@@ -323,12 +343,13 @@ class SeElements(Elements, Browser):
         :param only_displayed: Whether or not to only return elements that
                                are displayed
         :param wait: Wait until the selector finds at least 1 element. If this
-                     is set to ``True``, the find is retried for the appropriate
-                     number of seconds until at least 1 element is found. This
-                     is different from just setting the :attr:`ttl`, as it is
-                     possible to successfully return from a find with no
-                     elements if the DOM is currently changing. Syntactically,
-                     setting this to ``True`` is equivalent to::
+                     is set to ``True``, the find is retried for the
+                     appropriate number of seconds until at least 1 element is
+                     found. This is different from just setting the
+                     :attr:`ttl`, as it is possible to successfully return
+                     from a find with no elements if the DOM is currently
+                     changing. Syntactically setting this to ``True``
+                     is equivalent to::
 
                         elements.find('selector').until(lambda e: len(e) > 0)
 
@@ -337,12 +358,14 @@ class SeElements(Elements, Browser):
                   match the :attr:`selector`
         """
         ttl = ttl if ttl is not None else self.ttl
+
         def callback(elements):
             def inner(e):
                 matches = e.item.find_elements_by_css_selector(selector)
                 if only_displayed:
-                    matches = filter(lambda obj: obj.is_displayed(), matches)
+                    matches = [obj for obj in matches if obj.is_displayed()]
                 return matches
+
             results = elements.foreach(
                 inner,
                 return_results=True,
@@ -397,12 +420,14 @@ class SeElements(Elements, Browser):
                   match the :attr:`selector`
         """
         ttl = ttl if ttl is not None else self.ttl
+
         def callback(elements):
             def inner(e):
                 matches = e.item.find_elements_by_xpath(selector)
                 if only_displayed:
-                    matches = filter(lambda obj: obj.is_displayed(), matches)
+                    matches = [obj for obj in matches if obj.is_displayed()]
                 return matches
+
             results = elements.foreach(
                 inner,
                 return_results=True,
@@ -447,9 +472,10 @@ class SeElements(Elements, Browser):
                 def inner(e):
                     matches = e.item.find_elements_by_link_text(selector)
                     if only_displayed:
-                        matches =\
-                            filter(lambda obj: obj.is_displayed(), matches)
+                        matches = \
+                            [obj for obj in matches if obj.is_displayed()]
                     return matches
+
                 results = elements.foreach(
                     inner,
                     return_results=True,
@@ -458,18 +484,19 @@ class SeElements(Elements, Browser):
         else:
             def callback(elements):
                 def inner(e):
-                    matches =\
+                    matches = \
                         e.item.find_elements_by_partial_link_text(selector)
                     if only_displayed:
-                        matches =\
-                            filter(lambda obj: obj.is_displayed(), matches)
+                        matches = \
+                            [obj for obj in matches if obj.is_displayed()]
                     return matches
+
                 results = elements.foreach(
                     inner,
                     return_results=True,
                     ttl=ttl)
                 return [item for sublist in results for item in sublist]
-        
+
         elements = SeElements(
             self.browser, context=self, fn=callback, config=self.config)
         if wait:
@@ -483,8 +510,10 @@ class SeElements(Elements, Browser):
         :param fn: The filter function
         :returns: A new SeElements object with the filter applied
         """
+
         def callback(elements):
-            return map(lambda e: e.item, filter(fn, elements))
+            return [e.item for e in list(filter(fn, elements))]
+
         return SeElements(
             self.browser, context=self, fn=callback, config=self.config)
 
@@ -494,8 +523,10 @@ class SeElements(Elements, Browser):
         :param ttl: The minimum number of seconds to keep retrying
         :returns: The title of the page
         """
+
         def callback(elements):
             return elements.browser.title
+
         return self.retried(callback, update=True, ttl=ttl)
 
     def source(self, ttl=None):
@@ -504,8 +535,10 @@ class SeElements(Elements, Browser):
         :param ttl: The minimum number of seconds to keep retrying
         :returns: The source of the page
         """
+
         def callback(elements):
             return elements.browser.page_source
+
         return self.retried(callback, update=True, ttl=ttl)
 
     def navigate(self, url, ttl=None):
@@ -547,7 +580,8 @@ class SeElements(Elements, Browser):
                   results from the script that was executed
         """
         if async:
-            raise NotImplementedError("Can't perform async scripts yet. Sorry.")
+            raise NotImplementedError(
+                "Can't perform async scripts yet. Sorry.")
         results = self.retried(
             lambda: self.browser.execute_script(script), update=False)
         if not callback:
@@ -564,7 +598,7 @@ class SeElements(Elements, Browser):
         with ignored(Exception):
             dim = self.browser.get_window_size()
             return (dim['width'], dim['height'])
-            
+
     def set_window_size(self, width, height, sleep=DEFAULT_SLEEP_TIME):
         """Set the size of the browser window
 
@@ -635,8 +669,10 @@ class SeElements(Elements, Browser):
 
         :returns: The active element
         """
+
         def callback(elements):
-            return [elements.item.switch_to_active_element()]\
-                    if elements.items else None
+            return [elements.item.switch_to_active_element()] \
+                if elements.items else None
+
         return SeElements(
             self.browser, context=self, fn=callback, config=self.config)
