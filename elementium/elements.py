@@ -1,11 +1,9 @@
 """Elementium elements"""
-
-__author__ = "Patrick R. Schmid"
-__email__ = "prschmid@act.md"
-
+from __future__ import absolute_import
 
 import abc
 import collections
+import six
 import time
 
 from elementium.exc import TimeOutError
@@ -16,10 +14,12 @@ from elementium.util import (
 from elementium.waiters import ConditionElementsWaiter
 
 
-class Browser(object):
-    """A base interface for a browser."""
+__author__ = "Patrick R. Schmid"
+__email__ = "prschmid@act.md"
 
-    __metaclass__ = abc.ABCMeta
+
+class Browser(six.with_metaclass(abc.ABCMeta, object)):
+    """A base interface for a browser."""
 
     @abc.abstractmethod
     def title(self):
@@ -101,6 +101,9 @@ class ElementsIterator(object):
     def __iter__(self):
         return self
 
+    def __next__(self):
+        return self.next()
+
     def next(self):
         self.idx += 1
         if self.idx < len(self.elements.items):
@@ -109,11 +112,9 @@ class ElementsIterator(object):
             raise StopIteration
 
 
-class Elements(collections.MutableSequence):
+class Elements(six.with_metaclass(abc.ABCMeta, collections.MutableSequence)):
     """The abstract base class for a list of web elements"""
 
-    __metaclass__ = abc.ABCMeta
-    
     def __init__(self, browser, context=None, fn=None, config=None, lazy=None):
         """Create a list of elements
 

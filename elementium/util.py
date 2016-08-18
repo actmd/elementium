@@ -1,10 +1,11 @@
 """Elementium utility functions"""
 
-__author__ = "Patrick R. Schmid"
-__email__ = "prschmid@act.md"
+from __future__ import absolute_import
 
 from contextlib import contextmanager
-import time
+
+__author__ = "Patrick R. Schmid"
+__email__ = "prschmid@act.md"
 
 
 DEFAULT_SLEEP_TIME = 0.25
