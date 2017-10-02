@@ -3,5 +3,5 @@ more a more consistent, less frustrating experience."""
 
 from . import elements
 
-__version__ = '1.1.7'
+__version__ = '1.1.9'
 
