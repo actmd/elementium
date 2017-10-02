@@ -18,7 +18,8 @@ __author__ = "Patrick R. Schmid"
 __email__ = "prschmid@act.md"
 
 
-class Browser(six.with_metaclass(abc.ABCMeta, object)):
+@six.add_metaclass(abc.ABCMeta)
+class Browser(object):
     """A base interface for a browser."""
 
     @abc.abstractmethod
@@ -112,7 +113,8 @@ class ElementsIterator(object):
             raise StopIteration
 
 
-class Elements(six.with_metaclass(abc.ABCMeta, collections.MutableSequence)):
+@six.add_metaclass(abc.ABCMeta)
+class Elements(collections.MutableSequence):
     """The abstract base class for a list of web elements"""
 
     def __init__(self, browser, context=None, fn=None, config=None, lazy=None):

@@ -19,10 +19,9 @@ __author__ = "Patrick R. Schmid"
 __email__ = "prschmid@act.md"
 
 
-class Waiter(six.with_metaclass(abc.ABCMeta, object)):
+@six.add_metaclass(abc.ABCMeta)
+class Waiter(object):
     """Wait for something to happen"""
-
-    __metaclass__ = abc.ABCMeta
 
     def __init__(self, n=0, ttl=None, pause=1):
         """Create a new Waiter
