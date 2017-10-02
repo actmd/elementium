@@ -351,22 +351,32 @@ nosetests
 
 ### Running the tests across multiple python versions in parallel
 
-If you don't trust our Travis CI badge above, you can run all of the tests across multiple python versions by using [pyenv](https://github.com/yyuu/pyenv) and [detox](https://pypi.python.org/pypi/detox). A good writeup for what you need to do to set this up can be found [here](http://blog.pinaxproject.com/2015/12/08/how-test-against-multiple-python-versions-parallel/).
+If you don't trust our Travis CI badge above, you can run all of the tests across multiple python versions by using [pyenv](https://github.com/yyuu/pyenv) and [detox](https://pypi.python.org/pypi/detox). A good writeup for what you need to do to set this up can be found [here](http://blog.pinaxproject.com/2015/12/08/how-test-against-multiple-python-versions-parallel/). If you are using OS X and installed pyenv with brew, make sure to follow [these instructions](https://github.com/yyuu/pyenv#homebrew-on-mac-os-x) as well.
 
-Note: If you are using OS X and installed pyenv with brew, make sure to follow [these instructions](https://github.com/yyuu/pyenv#homebrew-on-mac-os-x) as well.
+```sh
+# Assuming OS X with Homebrew installed
+brew update
+brew install pyenv
+```
+
+```sh
+# Install tox and detox
+pip install tox
+pip install detox
+```
 
 You'll want to make sure that you have all of the different python versions are installed so that they can be tested:
 
 ```sh
-# Install the versions
-pyenv install 2.7.10
-pyenv install 3.2.6
+# Install the pyenv versions
+pyenv install 2.7.13
 pyenv install 3.3.6
-pyenv install 3.4.3
-pyenv install 3.5.0
+pyenv install 3.4.7
+pyenv install 3.5.4
+pyenv install 3.6.0
 
 # Set all these to be global versions
-pyenv global system 2.7.10 3.2.6 3.3.6 3.4.3 3.5.0
+pyenv global system 2.7.13 3.3.6 3.4.7 3.5.4 3.6.0
 
 # Make sure that they are all there (they should all have a * next to them)
 pyenv versions
