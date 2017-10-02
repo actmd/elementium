@@ -35,7 +35,10 @@ setup(
     url='http://github.com/actmd/elementium/',
     license='Apache Software License',
     author='Patrick R. Schmid',
-    install_requires=[],
+    install_requires=[
+        'selenium==2.48.0',
+        'six==1.11.0'
+        ],
     author_email='prschmid@act.md',
     description=description,
     long_description=long_description,
@@ -47,7 +50,7 @@ setup(
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 3',
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Natural Language :: English',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
