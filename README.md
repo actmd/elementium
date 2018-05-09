@@ -1,4 +1,4 @@
-Elementium
+Elementium v1.11.0
 ==========
 ![](https://travis-ci.org/actmd/elementium.svg?branch=master)
 
@@ -416,12 +416,12 @@ If you run in to an issue with running detox, make sure that you have the latest
 The Future
 ----------
 
-There are several features planned for the future to improve Elementium and they will be rolled out as they pass through our internal scrutiny. If you have great ideas, you can be part of Elementium's future as well!
+There are several features planned in our [Roadmap](./ROADMAP.md) for the future to improve Elementium and they will be rolled out as they pass through our internal scrutiny. If you have great ideas, you can be part of Elementium's future as well!
 
 Contributing
 ------------
 
-If you would like to contribute to this project, you will need to use [git flow](https://github.com/nvie/gitflow). This way, any and all changes happen on the development branch and not on the master branch. As such, after you have git-flow-ified your elementium git repo, create a pull request for your branch, and we'll take it from there.
+If you would like to contribute to this project, you will need to use [git flow](https://github.com/nvie/gitflow). This way, any and all changes happen on the development branch and not on the master branch. As such, after you have git-flow-ified your elementium git repo, create a pull request for your branch, and we'll take it from there. For more details see our [Contributing](./CONTRIBUTING.md) guide.
 
 Acknowledgements
 ----------------
