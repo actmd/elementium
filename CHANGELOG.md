@@ -3,6 +3,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.0] - 2019-05-21
+#### Added
+- Support for python 3.7 | [6f02f8d](https://github.com/actmd/elementium/commit/6f02f8dc0a305176bbfe3c1dfc1a2fd5abc22146)
+- Removed support for python 3.3
+- Bumped major version number to indicate potential for breaking due to parameter renaming.
+
+### Changed
+- README
+- Renamed `async` parameters to `asynchronous` for python 3.7 compatibility.
+
 ## [1.11.0] - 2017-10-02
 #### Added
 - Support for python 3.6 | [a541344](https://github.com/actmd/elementium/commit/a541344da164f2f647fe78701b19bc4c949a9a98)
