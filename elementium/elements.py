@@ -58,14 +58,14 @@ class Browser(object):
         return
 
     @abc.abstractmethod
-    def execute_script(self, script, callback=None, async=False):
+    def execute_script(self, script, callback=None, asynchronous=False):
         """Execute arbitrary JavaScript
 
         :param script: The JavaScript to execute
         :param callback: A function to execute with the results of the script.
                          This function should take a single parameter, the
                          results from the script.
-        :param async: Whether or not to do it asyncronously
+        :param asynchronous: Whether or not to do it asynchronously
         :returns: If :attr:`callback` is provided, then this will return the
                   results form the callback. If not, this will return the
                   results from the script that was executed
@@ -200,7 +200,7 @@ class Elements(collections.MutableSequence):
         """Get the i-th item as an :class:`Elements` object
 
         Since the items that we store are the raw web elements returned by the
-        driver, this method will wrap them appropriately, to return a 
+        driver, this method will wrap them appropriately, to return a
         :class:`Elements` object.
 
         :param i: The index of the item to return

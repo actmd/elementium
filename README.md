@@ -1,4 +1,4 @@
-Elementium v1.11.0
+Elementium
 ==========
 ![](https://travis-ci.org/actmd/elementium.svg?branch=master)
 
@@ -66,7 +66,7 @@ python setup.py install
 Compatability
 -------------
 
-Elementium has been tested for Python 2.6, 3.2, 3.3, 3.4, and pypy using [Travis CI](https://travis-ci.org/actmd/elementium)
+Elementium has been tested for Python 2.6, 3.4, 3.5, 3.7, and pypy using [Travis CI](https://travis-ci.org/actmd/elementium)
 
 Usage
 -----
@@ -370,16 +370,22 @@ You'll want to make sure that you have all of the different python versions are 
 ```sh
 # Install the pyenv versions
 pyenv install 2.7.13
-pyenv install 3.3.6
 pyenv install 3.4.7
 pyenv install 3.5.4
 pyenv install 3.6.0
+pyenv install 3.7.3
 
 # Set all these to be global versions
-pyenv global system 2.7.13 3.3.6 3.4.7 3.5.4 3.6.0
+pyenv global system 2.7.13 3.4.7 3.5.4 3.6.0 3.7.3
 
 # Make sure that they are all there (they should all have a * next to them)
 pyenv versions
+```
+
+Note, if you are running in to issues installing python due to a `zlib` issue, then take a look at [the solution in this thread](https://github.com/pyenv/pyenv/issues/1219) which can be summarized by saying that you should install your pyenv versions as follows
+
+```
+CFLAGS="-I$(xcrun --show-sdk-path)/usr/include" before your pyenv install ...
 ```
 
 Once you get everything installed, you can run the tests across the different versions as follows.
@@ -397,10 +403,6 @@ py27-1.7: commands succeeded
 py27-1.8: commands succeeded
 py27-1.9: commands succeeded
 py27-master: commands succeeded
-py32-1.7: commands succeeded
-py32-1.8: commands succeeded
-py33-1.7: commands succeeded
-py33-1.8: commands succeeded
 py34-1.7: commands succeeded
 py34-1.8: commands succeeded
 py34-1.9: commands succeeded
@@ -416,12 +418,12 @@ If you run in to an issue with running detox, make sure that you have the latest
 The Future
 ----------
 
-There are several features planned in our [Roadmap](./ROADMAP.md) for the future to improve Elementium and they will be rolled out as they pass through our internal scrutiny. If you have great ideas, you can be part of Elementium's future as well!
+There are several features planned for the future to improve Elementium and they will be rolled out as they pass through our internal scrutiny. If you have great ideas, you can be part of Elementium's future as well!
 
 Contributing
 ------------
 
-If you would like to contribute to this project, you will need to use [git flow](https://github.com/nvie/gitflow). This way, any and all changes happen on the development branch and not on the master branch. As such, after you have git-flow-ified your elementium git repo, create a pull request for your branch, and we'll take it from there. For more details see our [Contributing](./CONTRIBUTING.md) guide.
+If you would like to contribute to this project, you will need to use [git flow](https://github.com/nvie/gitflow). This way, any and all changes happen on the development branch and not on the master branch. As such, after you have git-flow-ified your elementium git repo, create a pull request for your branch, and we'll take it from there.
 
 Acknowledgements
 ----------------
