@@ -42,6 +42,7 @@ setup(
     author_email='prschmid@act.md',
     description=description,
     long_description=long_description,
+    long_description_content_type='text/markdown',
     packages=['elementium', 'elementium.drivers'],
     include_package_data=True,
     platforms='any',
