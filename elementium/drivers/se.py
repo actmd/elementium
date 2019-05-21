@@ -87,7 +87,7 @@ class SeElements(Elements, Browser):
         """Get the i-th item as an :class:`Elements` object
 
         Since the items that we store are the raw web elements returned by the
-        driver, this method will wrap them appropriately, to return a 
+        driver, this method will wrap them appropriately, to return a
         :class:`Elements` object.
 
         :param i: The index of the item to return
@@ -471,7 +471,7 @@ class SeElements(Elements, Browser):
                     return_results=True,
                     ttl=ttl)
                 return [item for sublist in results for item in sublist]
-        
+
         elements = SeElements(
             self.browser, context=self, fn=callback, config=self.config)
         if wait:
@@ -535,22 +535,23 @@ class SeElements(Elements, Browser):
         """
         return self.browser.current_url
 
-    def execute_script(self, script, callback=None, async=False, ttl=None):
+    def execute_script(
+            self, script, callback=None, asynchronous=False, ttl=None):
         """Execute arbitrary JavaScript
 
         :param script: The JavaScript to execute
         :param callback: A function to execute with the results of the script.
                          This function should take a single parameter, the
                          results from the script.
-        :param async: Whether or not to do it asyncronously
+        :param asynchronous: Whether or not to do it asynchronously
         :param ttl: The minimum number of seconds to keep retrying
         :returns: If :attr:`callback` is provided, then this will return the
                   results form the callback. If not, this will return the
                   results from the script that was executed
         """
-        if async:
+        if asynchronous:
             raise NotImplementedError(
-                "Can't perform async scripts yet. Sorry.")
+                "Can't perform asynchronous scripts yet. Sorry.")
         results = self.retried(
             lambda: self.browser.execute_script(script), update=False)
         if not callback:
@@ -567,7 +568,7 @@ class SeElements(Elements, Browser):
         with ignored(Exception):
             dim = self.browser.get_window_size()
             return (dim['width'], dim['height'])
-            
+
     def set_window_size(self, width, height, sleep=DEFAULT_SLEEP_TIME):
         """Set the size of the browser window
 
