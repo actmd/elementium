@@ -536,10 +536,11 @@ class SeElements(Elements, Browser):
         return self.browser.current_url
 
     def execute_script(
-            self, script, callback=None, asynchronous=False, ttl=None):
+            self, script, arguments = None, callback=None, asynchronous=False, ttl=None):
         """Execute arbitrary JavaScript
 
         :param script: The JavaScript to execute
+        :param arguments: Arguments to be passed to the script
         :param callback: A function to execute with the results of the script.
                          This function should take a single parameter, the
                          results from the script.
@@ -553,7 +554,7 @@ class SeElements(Elements, Browser):
             raise NotImplementedError(
                 "Can't perform asynchronous scripts yet. Sorry.")
         results = self.retried(
-            lambda: self.browser.execute_script(script), update=False)
+            lambda: self.browser.execute_script(script, arguments), update=False)
         if not callback:
             return results
         else:

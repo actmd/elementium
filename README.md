@@ -290,6 +290,22 @@ Basically all methods that are part of the `SeElements` object will be automatic
 
 (Look at the code for more detail.)
 
+### Executing JavaScript code
+
+#### Executing code with no arguments
+
+```python
+se.execute_script(script="alert('Executing some JS code')", ttl=10)
+```
+
+#### Execute Javascript code on a specific element
+```python
+# Draw a border around an element to highlight it
+input_field = se.find("input")
+script = "arguments[0].style.border='5px solid #6bf442'"
+# input_field is a collection of elements so you need to get the first one
+se.execute_script(script=script, arguments=input_field.item, ttl=10) 
+```
 
 ### Making assertions
 
