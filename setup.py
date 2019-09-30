@@ -36,7 +36,7 @@ setup(
     license='Apache Software License',
     author='Patrick R. Schmid',
     install_requires=[
-        'selenium==2.48.0',
+        'selenium==3.141.0',
         'six==1.11.0'
         ],
     author_email='prschmid@act.md',
