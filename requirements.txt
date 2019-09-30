@@ -1,2 +1,2 @@
-selenium==2.48.0
-six==1.11.0
+selenium==3.141.0
+six==1.12.0
