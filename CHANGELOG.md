@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.0.1] - 2019-09-30
+#### Changed
+- Updated dependencies (selenium, six, and mock)
+
 ## [2.0.0] - 2019-05-21
 #### Added
 - Support for python 3.7 | [6f02f8d](https://github.com/actmd/elementium/commit/6f02f8dc0a305176bbfe3c1dfc1a2fd5abc22146)
