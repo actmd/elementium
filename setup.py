@@ -37,7 +37,7 @@ setup(
     author='Patrick R. Schmid',
     install_requires=[
         'selenium==3.141.0',
-        'six==1.13.0'
+        'six==1.15.0'
         ],
     author_email='prschmid@act.md',
     description=description,
