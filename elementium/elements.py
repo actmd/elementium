@@ -114,7 +114,7 @@ class ElementsIterator(object):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class Elements(collections.MutableSequence):
+class Elements(collections.abc.MutableSequence):
     """The abstract base class for a list of web elements"""
 
     def __init__(self, browser, context=None, fn=None, config=None, lazy=None):
