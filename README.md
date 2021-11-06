@@ -66,7 +66,7 @@ python setup.py install
 Compatability
 -------------
 
-Elementium has been tested for Python 2.6, 3.4, 3.5, 3.7, and pypy using [Travis CI](https://travis-ci.org/actmd/elementium)
+Elementium has been tested for Python 2.7, 3.4, 3.5, 3.7, and pypy using [Travis CI](https://travis-ci.org/actmd/elementium)
 
 Usage
 -----
